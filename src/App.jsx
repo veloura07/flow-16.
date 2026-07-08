@@ -39,9 +39,9 @@ select{appearance:none;cursor:pointer}
 }
 @keyframes floatShip1 {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  25% { transform: translate(12px, -15px) rotate(1deg); }
-  50% { transform: translate(-8px, 10px) rotate(-0.5deg); }
-  75% { transform: translate(15px, 8px) rotate(0.5deg); }
+  25% { transform: translate(12px, -15px) rotate(1.5deg); }
+  50% { transform: translate(-8px, 10px) rotate(-1deg); }
+  75% { transform: translate(15px, 8px) rotate(0.8deg); }
 }
 @keyframes floatShip2 {
   0%, 100% { transform: translate(0, 0) rotate(3deg); }
@@ -51,6 +51,52 @@ select{appearance:none;cursor:pointer}
 @keyframes slowRotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+@keyframes nebulaDriftA {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+  50% { transform: translate(60px, -40px) scale(1.15) rotate(90deg); }
+}
+@keyframes nebulaDriftB {
+  0%, 100% { transform: translate(0, 0) scale(1.1) rotate(120deg); }
+  50% { transform: translate(-70px, 50px) scale(0.9) rotate(240deg); }
+}
+@keyframes nebulaDriftC {
+  0%, 100% { transform: translate(0, 0) scale(1) rotate(270deg); }
+  50% { transform: translate(-50px, -50px) scale(1.2) rotate(120deg); }
+}
+@keyframes spaceChaseTIE {
+  0% { transform: translate(-180px, 20vh) scale(0.5) rotate(15deg); opacity: 0; }
+  2% { opacity: 0.85; }
+  45% { transform: translate(45vw, 15vh) scale(0.7) rotate(5deg); opacity: 0.85; }
+  90% { opacity: 0.85; }
+  100% { transform: translate(110vw, 25vh) scale(0.5) rotate(20deg); opacity: 0; }
+}
+@keyframes spaceChaseXWing {
+  0% { transform: translate(-280px, 21vh) scale(0.48) rotate(12deg); opacity: 0; }
+  3% { opacity: 0.9; }
+  45% { transform: translate(43vw, 16vh) scale(0.68) rotate(4deg); opacity: 0.9; }
+  90% { opacity: 0.9; }
+  100% { transform: translate(110vw, 26vh) scale(0.48) rotate(18deg); opacity: 0; }
+}
+@keyframes dynamicShootingStar {
+  0% { transform: translate(0, 0) scaleX(0); opacity: 0; }
+  10% { opacity: 1; transform: translate(-80px, 80px) scaleX(1.3); }
+  35% { transform: translate(-300px, 300px) scaleX(1); opacity: 1; }
+  50%, 100% { transform: translate(-450px, 450px) scaleX(0.2); opacity: 0; }
+}
+@keyframes tieGlide {
+  0% { transform: translate(-150px, 35vh) scale(0.35) rotate(-5deg); opacity: 0; }
+  5% { opacity: 0.9; }
+  50% { transform: translate(50vw, 42vh) scale(0.65) rotate(5deg); opacity: 0.9; }
+  95% { opacity: 0.9; }
+  100% { transform: translate(110vw, 48vh) scale(0.35) rotate(-2deg); opacity: 0; }
+}
+@keyframes xWingClimb {
+  0% { transform: translate(110vw, 92vh) scale(0.28) rotate(-35deg); opacity: 0; }
+  6% { opacity: 0.95; }
+  50% { transform: translate(45vw, 55vh) scale(0.68) rotate(-28deg); opacity: 0.95; }
+  94% { opacity: 0.95; }
+  100% { transform: translate(-15vw, 15vh) scale(0.32) rotate(-38deg); opacity: 0; }
 }
 .rm-fade{animation:fadeUp .32s cubic-bezier(.4,0,.2,1) both}
 .rm-slide{animation:slideDown .24s cubic-bezier(.4,0,.2,1) both}
@@ -91,6 +137,15 @@ select{appearance:none;cursor:pointer}
   border-radius: 50%;
   pointer-events: none;
   box-shadow: 0 0 10px #38bdf8;
+}
+.dynamic-shooting-star {
+  position: absolute;
+  pointer-events: none;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(124,58,237,0.5) 40%, rgba(255,255,255,0) 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(167, 139, 250, 0.8), 0 0 4px #ffffff;
+  animation: dynamicShootingStar 2.2s cubic-bezier(0.1, 0.8, 0.25, 1) both;
 }
 `;
 
@@ -415,137 +470,483 @@ function Md({text,color}){
 }
 
 function UniverseBackground() {
-  const stars = useState(() => {
-    const list = [];
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const [scrollVelocity, setScrollVelocity] = useState(0);
+  const [shootingStars, setShootingStars] = useState([]);
+
+  const lastScrollY = useRef(0);
+  const lastTime = useRef(Date.now());
+  const velocityTimeout = useRef(null);
+
+  // Generate 3 layers of stars for deep parallax scrolling with speed stretch coefficients
+  const layers = useState(() => {
     const colors = ["star-glow-white", "star-glow-blue", "star-glow-pink", "star-glow-amber"];
-    for (let i = 0; i < 120; i++) {
-      list.push({
-        id: i,
+    
+    // Layer 1: Distant Stars (dim, small, slow scroll)
+    const l1 = [];
+    for (let i = 0; i < 90; i++) {
+      l1.push({
+        id: `l1-${i}`,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 2 + 1,
-        delay: Math.random() * 8,
-        duration: Math.random() * 4 + 3,
-        color: colors[Math.floor(Math.random() * colors.length)]
+        size: Math.random() * 0.8 + 0.5,
+        delay: Math.random() * 10,
+        duration: Math.random() * 5 + 4,
+        color: "star-glow-white",
+        opacity: Math.random() * 0.4 + 0.2,
+        layerFactor: 2.0
       });
     }
-    return list;
+
+    // Layer 2: Mid Stars (colorful, medium size & glow, medium scroll)
+    const l2 = [];
+    for (let i = 0; i < 50; i++) {
+      l2.push({
+        id: `l2-${i}`,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 1.5 + 0.8,
+        delay: Math.random() * 8,
+        duration: Math.random() * 4 + 3,
+        color: colors[Math.floor(Math.random() * 2) + 1], // blue or pink mostly
+        opacity: Math.random() * 0.6 + 0.3,
+        layerFactor: 4.5
+      });
+    }
+
+    // Layer 3: Foreground Stars (large, highly glowing, fast scroll)
+    const l3 = [];
+    for (let i = 0; i < 20; i++) {
+      l3.push({
+        id: `l3-${i}`,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 2.5 + 1.5,
+        delay: Math.random() * 6,
+        duration: Math.random() * 3 + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        opacity: Math.random() * 0.75 + 0.4,
+        layerFactor: 8.5
+      });
+    }
+
+    return { l1, l2, l3 };
   })[0];
+
+  // Random trigger function for high-quality SVG shooting stars
+  const triggerShootingStar = useCallback(() => {
+    const id = Math.random().toString();
+    const startX = Math.random() * 75 + 15; // 15% to 90% range
+    const startY = Math.random() * 35 + 8;  // 8% to 43% range
+    const angle = Math.random() * 15 - 45; // -45 to -30 degrees
+    const length = Math.random() * 140 + 90; // 90px to 230px
+    const duration = Math.random() * 1.0 + 1.2; // 1.2s to 2.2s
+
+    const newStar = {
+      id,
+      style: {
+        left: `${startX}%`,
+        top: `${startY}%`,
+        width: `${length}px`,
+        transform: `rotate(${angle}deg)`,
+        animationDuration: `${duration}s`
+      }
+    };
+
+    setShootingStars(prev => [...prev, newStar]);
+
+    // Clean up star from state after animation finishes
+    setTimeout(() => {
+      setShootingStars(prev => prev.filter(s => s.id !== id));
+    }, duration * 1000 + 100);
+  }, []);
+
+  useEffect(() => {
+    // Parallax scroll handler + speed tracker
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setScrollOffset(currentY);
+
+      const now = Date.now();
+      const dt = Math.max(1, now - lastTime.current);
+      const dy = Math.abs(currentY - lastScrollY.current);
+      const vel = dy / dt; // speed in pixels/ms
+      
+      const cappedVel = Math.min(vel, 8);
+      if (cappedVel > 0.15) {
+        setScrollVelocity(cappedVel);
+      }
+
+      lastScrollY.current = currentY;
+      lastTime.current = now;
+
+      if (velocityTimeout.current) {
+        cancelAnimationFrame(velocityTimeout.current);
+      }
+      
+      const decay = () => {
+        setScrollVelocity(v => {
+          if (v <= 0.04) return 0;
+          const nextV = v * 0.82;
+          velocityTimeout.current = requestAnimationFrame(decay);
+          return nextV;
+        });
+      };
+      
+      velocityTimeout.current = requestAnimationFrame(decay);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Periodically trigger a shooting star (every 6 to 10 seconds)
+    const interval = setInterval(() => {
+      if (Math.random() > 0.3) {
+        triggerShootingStar();
+      }
+    }, 7000);
+
+    // Trigger one almost immediately
+    const initialTimeout = setTimeout(triggerShootingStar, 1500);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearInterval(interval);
+      clearTimeout(initialTimeout);
+      if (velocityTimeout.current) {
+        cancelAnimationFrame(velocityTimeout.current);
+      }
+    };
+  }, [triggerShootingStar]);
+
+  const isLightspeed = scrollVelocity > 0.8;
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
-      {/* Background Starfield */}
-      {stars.map(s => (
+      
+      {/* 1. Drift-animated Nebulae Cloud Layer (3 layers of glowing gas) */}
+      <div style={{
+        position: "absolute",
+        top: "-15%",
+        left: "-15%",
+        width: "75%",
+        height: "75%",
+        background: "radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, rgba(124, 58, 237, 0.03) 50%, transparent 70%)",
+        borderRadius: "50%",
+        filter: "blur(120px)",
+        animation: "nebulaDriftA 45s ease-in-out infinite",
+        mixBlendMode: "screen",
+        opacity: 0.8
+      }} />
+
+      <div style={{
+        position: "absolute",
+        bottom: "-20%",
+        right: "-10%",
+        width: "85%",
+        height: "85%",
+        background: "radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, rgba(34, 211, 238, 0.02) 45%, transparent 70%)",
+        borderRadius: "50%",
+        filter: "blur(140px)",
+        animation: "nebulaDriftB 58s ease-in-out infinite",
+        mixBlendMode: "screen",
+        opacity: 0.75
+      }} />
+
+      <div style={{
+        position: "absolute",
+        top: "25%",
+        left: "25%",
+        width: "65%",
+        height: "65%",
+        background: "radial-gradient(circle, rgba(255, 45, 120, 0.07) 0%, rgba(255, 45, 120, 0.01) 40%, transparent 65%)",
+        borderRadius: "50%",
+        filter: "blur(110px)",
+        animation: "nebulaDriftC 50s ease-in-out infinite",
+        mixBlendMode: "screen",
+        opacity: 0.85
+      }} />
+
+      {/* 2. Parallax Starfield Layer 1 (Distant - Factor 0.05) with Lightspeed stretch */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+      }}>
+        {layers.l1.map(s => {
+          const stretchY = 1 + scrollVelocity * s.layerFactor;
+          const squeezeX = isLightspeed ? Math.max(0.35, 1 - scrollVelocity * 0.12) : 1;
+          const starOpacity = isLightspeed ? Math.min(1.0, s.opacity * (1 + scrollVelocity * 0.4)) : s.opacity;
+          return (
+            <div
+              key={s.id}
+              className={`star ${s.color}`}
+              style={{
+                left: `${s.x}%`,
+                top: `${s.y}%`,
+                width: `${s.size}px`,
+                height: `${s.size}px`,
+                animation: `twinkle ${s.duration}s ease-in-out infinite`,
+                animationDelay: `${s.delay}s`,
+                opacity: starOpacity,
+                transform: `translateY(${-scrollOffset * 0.05}px) scaleY(${stretchY}) scaleX(${squeezeX})`,
+                transformOrigin: "center center",
+                transition: "transform 0.08s ease-out, opacity 0.15s ease",
+                ...(isLightspeed ? {
+                  boxShadow: `0 0 ${8 + scrollVelocity * 4}px rgba(255, 255, 255, 0.8)`
+                } : {})
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* 3. Parallax Starfield Layer 2 (Mid-distance - Factor 0.13) with Lightspeed stretch */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+      }}>
+        {layers.l2.map(s => {
+          const stretchY = 1 + scrollVelocity * s.layerFactor;
+          const squeezeX = isLightspeed ? Math.max(0.3, 1 - scrollVelocity * 0.14) : 1;
+          const starOpacity = isLightspeed ? Math.min(1.0, s.opacity * (1 + scrollVelocity * 0.5)) : s.opacity;
+          return (
+            <div
+              key={s.id}
+              className={`star ${s.color}`}
+              style={{
+                left: `${s.x}%`,
+                top: `${s.y}%`,
+                width: `${s.size}px`,
+                height: `${s.size}px`,
+                animation: `twinkle ${s.duration}s ease-in-out infinite`,
+                animationDelay: `${s.delay}s`,
+                opacity: starOpacity,
+                transform: `translateY(${-scrollOffset * 0.13}px) scaleY(${stretchY}) scaleX(${squeezeX})`,
+                transformOrigin: "center center",
+                transition: "transform 0.08s ease-out, opacity 0.15s ease",
+                ...(isLightspeed ? {
+                  boxShadow: `0 0 ${8 + scrollVelocity * 5}px ${s.color === "star-glow-blue" ? "#38bdf8" : "#f472b6"}`
+                } : {})
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* 4. Parallax Starfield Layer 3 (Foreground - Factor 0.25) with Lightspeed stretch */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+      }}>
+        {layers.l3.map(s => {
+          const stretchY = 1 + scrollVelocity * s.layerFactor;
+          const squeezeX = isLightspeed ? Math.max(0.25, 1 - scrollVelocity * 0.16) : 1;
+          const starOpacity = isLightspeed ? Math.min(1.0, s.opacity * (1 + scrollVelocity * 0.6)) : s.opacity;
+          return (
+            <div
+              key={s.id}
+              className={`star ${s.color}`}
+              style={{
+                left: `${s.x}%`,
+                top: `${s.y}%`,
+                width: `${s.size}px`,
+                height: `${s.size}px`,
+                animation: `twinkle ${s.duration}s ease-in-out infinite`,
+                animationDelay: `${s.delay}s`,
+                opacity: starOpacity,
+                transform: `translateY(${-scrollOffset * 0.25}px) scaleY(${stretchY}) scaleX(${squeezeX})`,
+                transformOrigin: "center center",
+                transition: "transform 0.08s ease-out, opacity 0.15s ease",
+                ...(isLightspeed ? {
+                  boxShadow: `0 0 ${10 + scrollVelocity * 6}px ${s.color === "star-glow-blue" ? "#38bdf8" : s.color === "star-glow-pink" ? "#f472b6" : "#fbbf24"}`
+                } : {})
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* 5. Passive / Fallback Shooting Stars */}
+      <div className="shooting-star-line" style={{ top: "15%", right: "20%", animation: "shoot 14s linear infinite", animationDelay: "1s" }} />
+      <div className="shooting-star-line" style={{ top: "45%", right: "10%", animation: "shoot 18s linear infinite", animationDelay: "6s" }} />
+      <div className="shooting-star-line" style={{ top: "30%", right: "35%", animation: "shoot 16s linear infinite", animationDelay: "11s" }} />
+
+      {/* 6. Active Interactive Shooting Stars */}
+      {shootingStars.map(s => (
         <div
           key={s.id}
-          className={`star ${s.color}`}
-          style={{
-            left: `${s.x}%`,
-            top: `${s.y}%`,
-            width: `${s.size}px`,
-            height: `${s.size}px`,
-            animation: `twinkle ${s.duration}s ease-in-out infinite`,
-            animationDelay: `${s.delay}s`,
-            opacity: Math.random() * 0.7 + 0.3
-          }}
+          className="dynamic-shooting-star"
+          style={s.style}
         />
       ))}
 
-      {/* Shooting Stars with Staggered Timings */}
-      <div className="shooting-star-line" style={{ top: "15%", right: "20%", animation: "shoot 12s linear infinite", animationDelay: "1s" }} />
-      <div className="shooting-star-line" style={{ top: "45%", right: "10%", animation: "shoot 16s linear infinite", animationDelay: "5s" }} />
-      <div className="shooting-star-line" style={{ top: "30%", right: "35%", animation: "shoot 14s linear infinite", animationDelay: "9s" }} />
-      <div className="shooting-star-line" style={{ top: "70%", right: "25%", animation: "shoot 18s linear infinite", animationDelay: "13s" }} />
-
-      {/* Saturn-like ring planet (High resolution vector) */}
+      {/* 7. Imperial Star Destroyer (Looming majestic background sentinel) */}
       <div style={{
         position: "absolute",
-        top: "8%",
-        right: "4%",
-        opacity: 0.65,
-        animation: "floatShip1 25s ease-in-out infinite",
-        filter: "drop-shadow(0 0 20px rgba(124, 58, 237, 0.15))"
-      }}>
-        <svg width="150" height="150" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="90" cy="90" r="42" fill="url(#planetGlow)" opacity="0.4" filter="blur(15px)" />
-          {/* Back ring */}
-          <path d="M15 105 C 35 125, 145 125, 165 105" stroke="url(#ringGradient)" strokeWidth="7" strokeLinecap="round" opacity="0.75" />
-          {/* Planet body */}
-          <circle cx="90" cy="90" r="36" fill="url(#planetGradient)" stroke="#1E293B" strokeWidth="1" />
-          {/* Planetary bands */}
-          <path d="M57 78 C 70 83, 110 83, 123 78" stroke="rgba(255,255,255,0.18)" strokeWidth="2.5" strokeLinecap="round" />
-          <path d="M54 88 C 70 93, 110 93, 126 88" stroke="rgba(255, 45, 120, 0.3)" strokeWidth="3.5" strokeLinecap="round" />
-          <path d="M56 98 C 70 102, 110 102, 124 98" stroke="rgba(124, 58, 237, 0.25)" strokeWidth="2.5" strokeLinecap="round" />
-          <path d="M62 108 C 72 111, 108 111, 118 108" stroke="rgba(34, 211, 238, 0.2)" strokeWidth="1.5" strokeLinecap="round" />
-          {/* Front ring */}
-          <path d="M165 105 C 145 85, 35 85, 15 105" stroke="url(#ringGradient)" strokeWidth="7" strokeLinecap="round" filter="drop-shadow(0 0 10px rgba(167, 139, 250, 0.5))" />
-          <defs>
-            <radialGradient id="planetGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#7C3AED" />
-              <stop offset="100%" stopColor="transparent" />
-            </radialGradient>
-            <linearGradient id="planetGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0B132B" />
-              <stop offset="35%" stopColor="#1C2541" />
-              <stop offset="70%" stopColor="#3A2D54" />
-              <stop offset="100%" stopColor="#5B1E31" />
-            </linearGradient>
-            <linearGradient id="ringGradient" x1="0%" y1="50%" x2="100%" y2="50%">
-              <stop offset="0%" stopColor="#22D3EE" />
-              <stop offset="50%" stopColor="#A78BFA" />
-              <stop offset="100%" stopColor="#FF2D78" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-
-      {/* Spaceship 1: Sleek Exploration Frigate ("The Antigravity Voyager") */}
-      <div style={{
-        position: "absolute",
-        top: "22%",
+        bottom: "8%",
         left: "3%",
-        opacity: 0.65,
-        animation: "floatShip2 26s ease-in-out infinite",
-        filter: "drop-shadow(0 0 12px rgba(56, 189, 248, 0.25))"
+        opacity: 0.08,
+        transform: "scale(1.1)",
+        animation: "floatShip1 36s ease-in-out infinite",
+        filter: "drop-shadow(0 0 15px rgba(255,255,255,0.05))"
       }}>
-        <svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 20 L0 25 L10 30 Z" fill="rgba(56, 189, 248, 0.6)" filter="drop-shadow(0 0 8px #38bdf8)" />
-          <path d="M10 30 L0 35 L10 40 Z" fill="rgba(56, 189, 248, 0.6)" filter="drop-shadow(0 0 8px #38bdf8)" />
-          <path d="M20 25 C30 15, 80 15, 110 30 C80 45, 30 45, 20 35 Z" fill="#0F172A" stroke="#475569" strokeWidth="1.5" />
-          <path d="M40 22 C50 18, 70 18, 90 25 C70 32, 50 32, 40 28 Z" fill="#1E293B" stroke="#38BDF8" strokeWidth="1" />
-          <path d="M85 24 C90 24, 100 27, 105 30 C100 33, 90 34, 85 34 Z" fill="#38BDF8" opacity="0.8" />
-          <path d="M50 18 L45 5 L65 10 L60 18 Z" fill="#0284C7" stroke="#0ea5e9" strokeWidth="1" />
-          <path d="M50 42 L45 55 L65 50 L60 42 Z" fill="#0284C7" stroke="#0ea5e9" strokeWidth="1" />
-          <line x1="105" y1="28" x2="115" y2="25" stroke="#94A3B8" strokeWidth="1" />
-          <circle cx="115" cy="25" r="1.5" fill="#FF2D78" />
-          <rect x="15" y="24" width="6" height="12" rx="2" fill="#64748B" />
+        <svg width="220" height="130" viewBox="0 0 180 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="10,55 140,15 140,95" fill="#1e293b" stroke="#334155" strokeWidth="1.5" />
+          <polygon points="25,55 140,30 140,80" fill="#0f172a" stroke="#475569" strokeWidth="1" />
+          <polygon points="90,55 135,42 135,68" fill="#1e293b" stroke="#475569" strokeWidth="1" />
+          <rect x="115" y="47" width="22" height="16" fill="#0f172a" stroke="#475569" strokeWidth="1" />
+          <circle cx="123" cy="42" r="3" fill="#334155" stroke="#475569" />
+          <circle cx="131" cy="42" r="3" fill="#334155" stroke="#475569" />
+          <rect x="120" y="43" width="12" height="4" fill="#64748b" />
+          <line x1="90" y1="55" x2="135" y2="55" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3,6" opacity="0.6" />
+          <circle cx="143" cy="40" r="4.5" fill="#38bdf8" filter="drop-shadow(0 0 5px #38bdf8)" />
+          <circle cx="143" cy="55" r="5.5" fill="#38bdf8" filter="drop-shadow(0 0 7px #38bdf8)" />
+          <circle cx="143" cy="70" r="4.5" fill="#38bdf8" filter="drop-shadow(0 0 5px #38bdf8)" />
         </svg>
       </div>
 
-      {/* Spaceship 2: Horizon Sentinel Dreadnought */}
+      {/* 8. Millennium Falcon (The legendary vessel, gently exploring the top-right) */}
       <div style={{
         position: "absolute",
-        bottom: "15%",
-        right: "3%",
-        opacity: 0.6,
-        animation: "floatShip1 32s ease-in-out infinite",
-        filter: "drop-shadow(0 0 15px rgba(124, 58, 237, 0.3))"
+        top: "6%",
+        right: "5%",
+        opacity: 0.65,
+        animation: "floatShip2 28s ease-in-out infinite",
+        filter: "drop-shadow(0 0 16px rgba(56, 189, 248, 0.25))"
       }}>
-        <svg width="150" height="90" viewBox="0 0 150 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <polygon points="15,40 5,45 15,50" fill="#FF5722" filter="drop-shadow(0 0 8px #FF5722)" />
-          <polygon points="20,28 10,32 20,36" fill="#7C3AED" filter="drop-shadow(0 0 8px #7C3AED)" />
-          <polygon points="20,54 10,58 20,62" fill="#7C3AED" filter="drop-shadow(0 0 8px #7C3AED)" />
-          <polygon points="20,25 130,45 20,65" fill="#0F172A" stroke="#334155" strokeWidth="2" />
-          <polygon points="35,35 75,45 35,55" fill="#1E293B" stroke="#475569" strokeWidth="1.5" />
-          <polygon points="45,41 65,45 45,49" fill="#15803D" stroke="#22C55E" strokeWidth="1" />
-          <line x1="50" y1="30" x2="100" y2="41" stroke="#FFD700" strokeWidth="1" strokeDasharray="3,3" />
-          <line x1="50" y1="60" x2="100" y2="49" stroke="#FFD700" strokeWidth="1" strokeDasharray="3,3" />
-          <circle cx="80" cy="40" r="3" fill="#475569" />
-          <line x1="80" y1="40" x2="85" y2="36" stroke="#94A3B8" strokeWidth="1.5" />
-          <circle cx="80" cy="50" r="3" fill="#475569" />
-          <line x1="80" y1="50" x2="85" y2="54" stroke="#94A3B8" strokeWidth="1.5" />
+        <svg width="115" height="100" viewBox="0 0 110 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="55" cy="45" r="28" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
+          <circle cx="55" cy="45" r="18" fill="#0f172a" stroke="#334155" />
+          <path d="M 32 17 L 32 37 L 44 32 L 40 17 Z" fill="#1e293b" stroke="#475569" strokeWidth="1.2" />
+          <path d="M 66 17 L 70 32 L 78 37 L 78 17 Z" fill="#1e293b" stroke="#475569" strokeWidth="1.2" />
+          <rect x="46" y="22" width="18" height="8" rx="1" fill="#090d16" stroke="#334155" />
+          <path d="M 83 40 L 98 42 L 98 48 L 83 50 Z" fill="#1e293b" stroke="#475569" />
+          <rect x="91" y="43" width="6" height="4" rx="1" fill="#38bdf8" opacity="0.75" />
+          <circle cx="43" cy="38" r="5" fill="#334155" stroke="#475569" />
+          <line x1="43" y1="38" x2="39" y2="34" stroke="#94a3b8" />
+          <path d="M 35 71 C 45 74, 65 74, 75 71" stroke="#22d3ee" strokeWidth="3.5" strokeLinecap="round" filter="drop-shadow(0 0 7px #22d3ee)" />
         </svg>
       </div>
+
+      {/* 9. Star Wars Space Chase: TIE Fighter (being chased!) */}
+      <div style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 5
+      }}>
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          animation: "spaceChaseTIE 18s linear infinite",
+          animationDelay: "3s"
+        }}>
+          <svg width="85" height="90" viewBox="0 0 85 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="42.5" y1="50" x2="160" y2="50" stroke="#10f5a0" strokeWidth="2" strokeDasharray="12,18" opacity="0.9" filter="drop-shadow(0 0 5px #10f5a0)" />
+            <polygon points="5,15 15,5 15,85 5,75" fill="#0f172a" stroke="#334155" strokeWidth="1.5" />
+            <polygon points="8,20 12,12 12,78 8,70" fill="#1e293b" />
+            <line x1="5" y1="45" x2="15" y2="45" stroke="#475569" strokeWidth="1" />
+            <line x1="10" y1="10" x2="10" y2="80" stroke="#475569" strokeWidth="1" />
+            <rect x="15" y="42" width="15" height="6" fill="#475569" stroke="#334155" strokeWidth="1" />
+            <circle cx="42.5" cy="45" r="16" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
+            <circle cx="42.5" cy="45" r="9" fill="#0f172a" stroke="#475569" strokeWidth="1" />
+            <line x1="42.5" y1="36" x2="42.5" y2="54" stroke="#475569" strokeWidth="1" />
+            <line x1="33.5" y1="45" x2="51.5" y2="45" stroke="#475569" strokeWidth="1" />
+            <circle cx="42.5" cy="45" r="3.5" fill="#334155" />
+            <circle cx="40.5" cy="51.5" r="1.2" fill="#ef4444" filter="drop-shadow(0 0 2px #ef4444)" />
+            <circle cx="44.5" cy="51.5" r="1.2" fill="#ef4444" filter="drop-shadow(0 0 2px #ef4444)" />
+            <rect x="55" y="42" width="15" height="6" fill="#475569" stroke="#334155" strokeWidth="1" />
+            <polygon points="80,15 70,5 70,85 80,75" fill="#0f172a" stroke="#334155" strokeWidth="1.5" />
+            <polygon points="77,20 73,12 73,78 77,70" fill="#1e293b" />
+            <line x1="70" y1="45" x2="80" y2="45" stroke="#475569" strokeWidth="1" />
+            <line x1="75" y1="10" x2="75" y2="80" stroke="#475569" strokeWidth="1" />
+          </svg>
+        </div>
+
+        {/* 10. Star Wars Space Chase: X-Wing (doing the chasing & firing!) */}
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          animation: "spaceChaseXWing 18s linear infinite",
+          animationDelay: "3.4s" // lags perfectly behind to look like a chase!
+        }}>
+          <svg width="95" height="90" viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="10" y1="15" x2="-100" y2="15" stroke="#ff0000" strokeWidth="2" strokeDasharray="15,25" opacity="0.95" filter="drop-shadow(0 0 5px #ff0000)" />
+            <line x1="10" y1="75" x2="-100" y2="75" stroke="#ff0000" strokeWidth="2" strokeDasharray="15,25" opacity="0.95" filter="drop-shadow(0 0 5px #ff0000)" />
+            <path d="M 90 45 L 35 40 L 35 50 Z" fill="#1e293b" stroke="#475569" strokeWidth="1.2" />
+            <path d="M 50 42 L 65 42 L 60 48 L 48 48 Z" fill="#334155" stroke="#38bdf8" strokeWidth="1" />
+            <circle cx="56" cy="39" r="2.5" fill="#2563eb" />
+            <circle cx="56" cy="39" r="1.5" fill="#f8fafc" />
+            <path d="M 40 40 L 15 15 L 10 18 L 35 43 Z" fill="#334155" stroke="#475569" />
+            <path d="M 40 50 L 15 75 L 10 72 L 35 47 Z" fill="#334155" stroke="#475569" />
+            <path d="M 45 40 L 25 22 L 21 25 L 40 43 Z" fill="#1e293b" stroke="#334155" />
+            <path d="M 45 50 L 25 68 L 21 65 L 40 47 Z" fill="#1e293b" stroke="#334155" />
+            <rect x="5" y="13" width="12" height="3" fill="#64748b" />
+            <line x1="5" y1="14.5" x2="18" y2="14.5" stroke="#ff2d78" strokeWidth="1" />
+            <rect x="5" y="73" width="12" height="3" fill="#64748b" />
+            <line x1="5" y1="74.5" x2="18" y2="74.5" stroke="#ff2d78" strokeWidth="1" />
+            <circle cx="40" cy="45" r="6" fill="#1e293b" stroke="#ef4444" strokeWidth="1.5" />
+          </svg>
+        </div>
+      </div>
+
+      {/* 11. Independent Gliding TIE Fighter (Glides periodically along fixed path) */}
+      <div style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        animation: "tieGlide 22s linear infinite",
+        animationDelay: "4s",
+        filter: "drop-shadow(0 0 15px rgba(16, 245, 160, 0.15))",
+        zIndex: 4
+      }}>
+        <svg width="70" height="75" viewBox="0 0 85 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="42.5" y1="45" x2="180" y2="45" stroke="#10f5a0" strokeWidth="2.5" strokeDasharray="10,20" opacity="0.85" filter="drop-shadow(0 0 6px #10f5a0)" />
+          <polygon points="5,15 15,5 15,85 5,75" fill="#0f172a" stroke="#475569" strokeWidth="1.5" />
+          <polygon points="8,20 12,12 12,78 8,70" fill="#1e293b" />
+          <line x1="5" y1="45" x2="15" y2="45" stroke="#64748b" strokeWidth="1" />
+          <line x1="10" y1="10" x2="10" y2="80" stroke="#64748b" strokeWidth="1" />
+          <rect x="15" y="42" width="15" height="6" fill="#475569" stroke="#334155" strokeWidth="1" />
+          <circle cx="42.5" cy="45" r="15" fill="#1e293b" stroke="#64748b" strokeWidth="1.5" />
+          <circle cx="42.5" cy="45" r="8" fill="#0f172a" stroke="#475569" strokeWidth="1" />
+          <circle cx="42.5" cy="45" r="3" fill="#38bdf8" />
+          <rect x="55" y="42" width="15" height="6" fill="#475569" stroke="#334155" strokeWidth="1" />
+          <polygon points="80,15 70,5 70,85 80,75" fill="#0f172a" stroke="#475569" strokeWidth="1.5" />
+          <polygon points="77,20 73,12 73,78 77,70" fill="#1e293b" />
+          <line x1="70" y1="45" x2="80" y2="45" stroke="#64748b" strokeWidth="1" />
+          <line x1="75" y1="10" x2="75" y2="80" stroke="#64748b" strokeWidth="1" />
+        </svg>
+      </div>
+
+      {/* 12. Independent Climbing X-Wing (Emerges from bottom-right corner) */}
+      <div style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        animation: "xWingClimb 26s linear infinite",
+        animationDelay: "10s",
+        filter: "drop-shadow(0 0 15px rgba(239, 68, 68, 0.2))",
+        zIndex: 4
+      }}>
+        <svg width="80" height="75" viewBox="0 0 100 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="5" y1="14" x2="-120" y2="14" stroke="#ff3b30" strokeWidth="2" strokeDasharray="12,24" opacity="0.9" filter="drop-shadow(0 0 5px #ff3b30)" />
+          <line x1="5" y1="74" x2="-120" y2="74" stroke="#ff3b30" strokeWidth="2" strokeDasharray="12,24" opacity="0.9" filter="drop-shadow(0 0 5px #ff3b30)" />
+          <path d="M 85 45 L 30 38 L 30 52 Z" fill="#1e293b" stroke="#64748b" strokeWidth="1.2" />
+          <path d="M 45 42 L 60 42 L 55 48 L 43 48 Z" fill="#334155" stroke="#0ea5e9" strokeWidth="1" />
+          <circle cx="51" cy="40" r="2" fill="#2563eb" />
+          <circle cx="51" cy="40" r="1" fill="#f8fafc" />
+          <path d="M 35 40 L 10 12 L 6 15 L 30 43 Z" fill="#334155" stroke="#475569" />
+          <path d="M 35 50 L 10 78 L 6 75 L 30 47 Z" fill="#334155" stroke="#475569" />
+          <circle cx="33" cy="28" r="3.5" fill="#ef4444" filter="drop-shadow(0 0 3px #ef4444)" />
+          <circle cx="33" cy="62" r="3.5" fill="#ef4444" filter="drop-shadow(0 0 3px #ef4444)" />
+          <rect x="2" y="10" width="10" height="3" fill="#64748b" />
+          <line x1="2" y1="11.5" x2="15" y2="11.5" stroke="#ff2d78" strokeWidth="1" />
+          <rect x="2" y="76" width="10" height="3" fill="#64748b" />
+          <line x1="2" y1="77.5" x2="15" y2="77.5" stroke="#ff2d78" strokeWidth="1" />
+          <circle cx="35" cy="45" r="5" fill="#0f172a" stroke="#ef4444" strokeWidth="1.2" />
+        </svg>
+      </div>
+
     </div>
   );
 }
