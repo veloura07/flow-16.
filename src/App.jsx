@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@1,800;1,900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:#020611;font-family:'Inter',sans-serif;color:#F8FAFC}
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -18,10 +19,18 @@ select{appearance:none;cursor:pointer}
 @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes shimmer{0%{background-position:-400% 0}100%{background-position:400% 0}}
 @keyframes timerPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,45,120,0.4)}50%{box-shadow:0 0 0 8px rgba(255,45,120,0)}}
+@keyframes slideLeft{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes driftUp{
+  0%{transform:translateY(0) scale(0.5);opacity:0}
+  15%{opacity:1;transform:translateY(-15vh) scale(1.1) rotate(15deg)}
+  50%{transform:translateY(-50vh) scale(1) rotate(-15deg)}
+  85%{opacity:1}
+  100%{transform:translateY(-105vh) scale(0.8) rotate(30deg);opacity:0}
+}
 .rm-fade{animation:fadeUp .32s cubic-bezier(.4,0,.2,1) both}
 .rm-slide{animation:slideDown .24s cubic-bezier(.4,0,.2,1) both}
-.rm-card{transition:transform .25s cubic-bezier(.4,0,.2,1),box-shadow .25s ease,background-color .25s ease,border-color .25s ease;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.rm-card:hover{transform:translateY(-2.5px);box-shadow:0 12px 30px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.05)}
+.rm-card{transition:transform .3s cubic-bezier(.34, 1.56, .64, 1),box-shadow .3s ease,background-color .3s ease,border-color .3s ease;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.rm-card:hover{transform:translateY(-4px) scale(1.015);box-shadow:0 16px 36px rgba(0,0,0,0.45), 0 0 25px var(--ph-glow, rgba(124,58,237,0.15)), inset 0 1px 0 rgba(255,255,255,0.08);border-color:var(--ph-hover-border, rgba(255,255,255,0.15)) !important}
 .rm-btn{transition:all .2s cubic-bezier(.4,0,.2,1);border:none;cursor:pointer}
 .rm-btn:active{transform:scale(0.96)}
 .rm-check{transition:all .2s cubic-bezier(.4,0,.2,1);cursor:pointer;user-select:none}
@@ -29,6 +38,8 @@ select{appearance:none;cursor:pointer}
 .rm-tab{transition:all .2s ease;border:none;cursor:pointer;background:transparent;white-space:nowrap}
 .shimmer{background:linear-gradient(90deg,#fff 0%,rgba(255,255,255,0.35) 50%,#fff 100%);background-size:400% 100%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s ease infinite}
 .mono{font-family:'JetBrains Mono',monospace!important}
+.no-scrollbar::-webkit-scrollbar { display: none !important; }
+.no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
 `;
 
 const PHASES = [
@@ -195,6 +206,45 @@ const TRACKS=[
 ];
 
 const DIFF_C={"Critical":"#FF2D78","Must Own":"#FF2D78","Foundation":"#22D3EE","Core":"#94A3B8","Important":"#A78BFA","Deep":"#FBBF24","Frontier":"#F97316","Master":"#10B981"};
+
+const DIFFS = ["All", "Critical", "Must Own", "Core", "Foundation", "Important", "Deep", "Master"];
+const DOMAINS = ["All", "Systems", "Backend", "C / C++", "Algorithms & DSA", "Cloud & DevOps", "Mathematics & ML", "Deep Learning & LLMs", "AI Eng & Agents"];
+
+const getTopicDomain = (topic, month) => {
+  const t = topic.name.toLowerCase();
+  if (t.includes("linux") || t.includes("operating system") || t.includes("systems programming") || t.includes("kernel") || t.includes("shell") || t.includes("memory model") || t.includes("networking") || t.includes("architecture")) {
+    return "Systems";
+  }
+  if (t.includes("python") || t.includes("backend") || t.includes("fastapi") || t.includes("http") || t.includes("auth") || t.includes("sql") || t.includes("postgres") || t.includes("redis") || t.includes("django") || t.includes("flask") || t.includes("rest") || t.includes("graphql") || t.includes("message queue")) {
+    return "Backend";
+  }
+  if (t.includes("c programming") || t.includes("c++") || t.includes("stl") || t.includes("pointer") || t.includes("memory management") || t.includes("raii")) {
+    return "C / C++";
+  }
+  if (t.includes("linked list") || t.includes("stack") || t.includes("queue") || t.includes("tree") || t.includes("heap") || t.includes("graph") || t.includes("shortest path") || t.includes("mst") || t.includes("backtracking") || t.includes("greedy") || t.includes("dynamic programming") || t.includes("sort") || t.includes("binary search") || t.includes("complexity") || t.includes("array") || t.includes("string") || t.includes("hash") || t.includes("pattern")) {
+    return "Algorithms & DSA";
+  }
+  if (t.includes("docker") || t.includes("kubernetes") || t.includes("aws") || t.includes("cloud") || t.includes("scalability") || t.includes("observability") || t.includes("ci/cd") || t.includes("distributed system") || t.includes("infrastructure") || t.includes("git")) {
+    return "Cloud & DevOps";
+  }
+  if (t.includes("linear algebra") || t.includes("probability") || t.includes("statistics") || t.includes("information theory") || t.includes("optimization") || t.includes("mathematics") || t.includes("classical machine learning") || t.includes("gradient descent")) {
+    return "Mathematics & ML";
+  }
+  if (t.includes("neural network") || t.includes("pytorch") || t.includes("deep learning") || t.includes("transformer") || t.includes("attention") || t.includes("llm internals") || t.includes("optimizer") || t.includes("cnn") || t.includes("rnn") || t.includes("sequence model")) {
+    return "Deep Learning & LLMs";
+  }
+  if (t.includes("rag") || t.includes("agent") || t.includes("vector db") || t.includes("vector database") || t.includes("inference") || t.includes("mcp") || t.includes("prompt") || t.includes("observability and evaluation") || t.includes("security") || t.includes("governance")) {
+    return "AI Eng & Agents";
+  }
+  if (month.month === 1 || month.month === 4) return "Systems";
+  if (month.month === 2 || month.month === 3 || month.month === 8) return "Backend";
+  if (month.month === 5 || month.month === 6 || month.month === 7) return "Algorithms & DSA";
+  if (month.month === 9) return "Cloud & DevOps";
+  if (month.month === 10) return "Mathematics & ML";
+  if (month.month === 11) return "Deep Learning & LLMs";
+  if (month.month === 12) return "AI Eng & Agents";
+  return "Systems";
+};
 const RTYPES=[{v:"video",i:"🎬",l:"Video"},{v:"article",i:"📄",l:"Article"},{v:"docs",i:"📚",l:"Docs"},{v:"course",i:"🎓",l:"Course"},{v:"book",i:"📖",l:"Book"},{v:"github",i:"💻",l:"GitHub"},{v:"tool",i:"🔧",l:"Tool"},{v:"other",i:"🔗",l:"Other"}];
 const BG="#020611",CARD="rgba(10, 25, 47, 0.45)",CARD2="rgba(16, 36, 66, 0.6)",BDR="rgba(255,255,255,0.07)",BDR2="rgba(255,255,255,0.12)",T1="#F8FAFC",T2="#CBD5E1",T3="#64748B";
 const GLASS={backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)"};
@@ -491,6 +541,271 @@ function Pomodoro(){
   );
 }
 
+function CelebrationOverlay({ active }) {
+  if (!active) return null;
+  
+  // Create an array of 45 particles with random positions, delays, emojis
+  const particles = Array.from({ length: 45 }).map((_, i) => {
+    const left = Math.random() * 100;
+    const delay = Math.random() * 3.0;
+    const size = Math.random() * 14 + 14;
+    const emoji = ["✨", "🎉", "⭐", "💫", "🏆", "🌸", "🚀"][Math.floor(Math.random() * 7)];
+    const duration = Math.random() * 1.5 + 2.0; // 2s to 3.5s
+    return { id: i, left, delay, size, emoji, duration };
+  });
+
+  return (
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 99999, overflow: "hidden" }}>
+      {particles.map(p => (
+        <span key={p.id} style={{
+          position: "absolute",
+          left: `${p.left}%`,
+          bottom: "-15%",
+          fontSize: `${p.size}px`,
+          pointerEvents: "none",
+          animation: `driftUp ${p.duration}s cubic-bezier(0.1, 0.8, 0.3, 1) both`,
+          animationDelay: `${p.delay}s`,
+        }}>
+          {p.emoji}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function RoadmapChart({ done }) {
+  const data = MONTHS.map(m => ({
+    name: `M${m.month}`,
+    title: m.title,
+    progress: pct(m, done)
+  }));
+
+  return (
+    <div style={{
+      background: CARD,
+      border: `1px solid ${BDR}`,
+      borderRadius: "16px",
+      padding: "20px",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.2)"
+    }}>
+      <div style={{ fontSize: "11px", color: T3, fontWeight: "800", letterSpacing: "1.5px", marginBottom: "16px", textTransform: "uppercase", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span>📈 PROGRESS CHART</span>
+        <span style={{ color: "#22D3EE", fontSize: "10px", fontWeight: "700" }}>By Module</span>
+      </div>
+      <div style={{ width: "100%", height: 160 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+            <defs>
+              <linearGradient id="chartColor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.4}/>
+                <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <XAxis dataKey="name" stroke={T3} fontSize={10} tickLine={false} axisLine={false} />
+            <YAxis stroke={T3} fontSize={10} domain={[0, 100]} tickLine={false} axisLine={false} />
+            <Tooltip
+              contentStyle={{ background: "rgba(10, 22, 40, 0.95)", border: `1px solid ${BDR}`, borderRadius: "10px", fontSize: "11.5px", color: T1, boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}
+              itemStyle={{ color: "#22D3EE", padding: 0 }}
+              labelStyle={{ fontWeight: "bold", color: T1, marginBottom: "4px" }}
+              formatter={(value) => [`${value}%`, "Completed"]}
+              labelFormatter={(label, items) => {
+                const item = items[0]?.payload;
+                return item ? `${label}: ${item.title}` : label;
+              }}
+            />
+            <Area type="monotone" dataKey="progress" stroke="#7C3AED" strokeWidth={2.5} fillOpacity={1} fill="url(#chartColor)" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}
+
+function ModuleNoteDrawer({ activeMonth, onClose, onSave }) {
+  const [text, setText] = useState("");
+  
+  useEffect(() => {
+    if (activeMonth) {
+      const saved = ls.get(`rmx_module_notes_${activeMonth}`, "");
+      setText(saved);
+    }
+  }, [activeMonth]);
+
+  if (!activeMonth) return null;
+
+  const monthData = MONTHS.find(m => m.month === activeMonth);
+  if (!monthData) return null;
+  const ph = PHASES[monthData.phase - 1];
+
+  const handleSave = (val) => {
+    const clean = val.slice(0, 200);
+    setText(clean);
+    ls.set(`rmx_module_notes_${activeMonth}`, clean);
+    if (onSave) onSave();
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 2000,
+      display: "flex",
+      justifyContent: "flex-end",
+      background: "rgba(2, 6, 17, 0.6)",
+      backdropFilter: "blur(8px)",
+      WebkitBackdropFilter: "blur(8px)",
+      animation: "fadeIn 0.25s ease both"
+    }} onClick={onClose}>
+      <div style={{
+        width: "100%",
+        maxWidth: "400px",
+        height: "100%",
+        background: "rgba(10, 22, 40, 0.95)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderLeft: `1px solid ${ph.c}30`,
+        boxShadow: `-10px 0 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)`,
+        padding: "32px 24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        animation: "slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) both",
+        position: "relative"
+      }} onClick={e => e.stopPropagation()}>
+        {/* Glowing top line matching Phase color */}
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "3px",
+          background: `linear-gradient(90deg, ${ph.c}, ${ph.c2})`,
+          boxShadow: `0 2px 10px ${ph.c}`
+        }} />
+
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: "10px", color: ph.c, fontWeight: "800", letterSpacing: "2px", textTransform: "uppercase" }}>
+              {ph.name} · MODULE {activeMonth}
+            </div>
+            <div style={{ fontSize: "18px", fontWeight: "900", color: T1, fontFamily: "'Playfair Display', serif", fontStyle: "italic", marginTop: "4px" }}>
+              {monthData.title}
+            </div>
+          </div>
+          <button onClick={onClose} className="rm-btn" style={{
+            background: "rgba(255,255,255,0.05)",
+            border: `1px solid ${BDR}`,
+            color: T2,
+            width: "32px",
+            height: "32px",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer"
+          }}>✕</button>
+        </div>
+
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px", marginTop: "10px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "11px", fontWeight: "700", color: T2, display: "flex", alignItems: "center", gap: "6px" }}>
+              <span>✍️</span> Personal Notes
+            </span>
+            <span style={{
+              fontSize: "10px",
+              fontFamily: "'JetBrains Mono', monospace",
+              color: text.length >= 180 ? "#FF2D78" : (text.length >= 140 ? "#FBBF24" : ph.c),
+              fontWeight: "600"
+            }}>
+              {text.length} / 200
+            </span>
+          </div>
+          
+          <div style={{ position: "relative", flex: 1, display: "flex", flexDirection: "column" }}>
+            <textarea
+              value={text}
+              onChange={e => handleSave(e.target.value)}
+              placeholder="Jot down brief takeaways, resources, commands, or personal goals for this module..."
+              maxLength={200}
+              style={{
+                width: "100%",
+                flex: 1,
+                background: "rgba(5, 14, 30, 0.6)",
+                border: `1px solid ${text.length > 0 ? ph.c + "50" : "rgba(255,255,255,0.1)"}`,
+                borderRadius: "12px",
+                padding: "16px",
+                color: T1,
+                fontSize: "12.5px",
+                lineHeight: "1.7",
+                resize: "none",
+                outline: "none",
+                transition: "all 0.25s ease",
+                boxShadow: text.length > 0 ? `inset 0 0 10px ${ph.c}0b` : "none"
+              }}
+              onFocus={e => e.target.style.borderColor = ph.c}
+              onBlur={e => e.target.style.borderColor = text.length > 0 ? ph.c + "50" : "rgba(255,255,255,0.1)"}
+            />
+            
+            {text.length === 200 && (
+              <div style={{
+                position: "absolute",
+                bottom: "12px",
+                right: "12px",
+                fontSize: "9px",
+                background: "rgba(255,45,120,0.15)",
+                color: "#FF2D78",
+                padding: "2px 6px",
+                borderRadius: "4px",
+                border: "1px solid rgba(255,45,120,0.3)",
+                fontWeight: "700",
+                animation: "popIn 0.2s ease"
+              }}>
+                Character limit reached
+              </div>
+            )}
+          </div>
+
+          <div style={{
+            background: "rgba(255,255,255,0.02)",
+            border: `1px solid ${BDR}`,
+            borderRadius: "10px",
+            padding: "12px 14px"
+          }}>
+            <div style={{ fontSize: "9px", color: T3, fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+              💡 Persistence Note
+            </div>
+            <div style={{ fontSize: "10.5px", color: T2, lineHeight: "1.5" }}>
+              These notes are locally secured on your device and will load instantly whenever you review this module.
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="rm-btn"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "10px",
+            background: `linear-gradient(135deg, ${ph.c}, ${ph.c2})`,
+            color: T1,
+            fontWeight: "800",
+            fontSize: "12px",
+            boxShadow: `0 4px 15px ${ph.c}33`,
+            cursor: "pointer",
+            textAlign: "center"
+          }}
+        >
+          ✓ Close & Keep Note
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function App(){
   useEffect(()=>{
     if(document.getElementById("rmx-css"))return;
@@ -511,6 +826,20 @@ export default function App(){
   const [libTab,setLibTab]=useState("notes");
   const [phaseFilter,setPhaseFilter]=useState(0);
   const [searchQuery,setSearchQuery]=useState("");
+  const [selectedDiff, setSelectedDiff] = useState("All");
+  const [selectedDomain, setSelectedDomain] = useState("All");
+  const [activeNoteMonth, setActiveNoteMonth] = useState(null);
+  const [syncState, setSyncState] = useState("saved"); // "saving" | "saved"
+
+  const isFirstRender = useRef(true);
+
+  const triggerSaveSync = useCallback(() => {
+    setSyncState("saving");
+    const t = setTimeout(() => {
+      setSyncState("saved");
+    }, 700);
+    return () => clearTimeout(t);
+  }, []);
 
   const matchesSearch = useCallback((month, query) => {
     const q = query.toLowerCase().trim();
@@ -534,6 +863,29 @@ export default function App(){
       return next;
     });
   },[]);
+  const toggleTopicDone = useCallback((mn, ti, topic) => {
+    setDone(prev => {
+      const isComp = topic.items.every((_, ii) => prev[`m${mn}_t${ti}_i${ii}`]);
+      const next = { ...prev };
+      topic.items.forEach((_, ii) => {
+        const key = `m${mn}_t${ti}_i${ii}`;
+        if (isComp) {
+          delete next[key];
+        } else {
+          next[key] = true;
+        }
+      });
+      ls.set("rmx_done", next);
+      const m = MONTHS.find(x => x.month === mn);
+      if (m && !isComp) {
+        const nc = Object.keys(next).filter(k => k.startsWith(`m${mn}_`) && next[k]).length;
+        if (nc === totalItems(m)) {
+          setConfetti(mn);
+        }
+      }
+      return next;
+    });
+  }, []);
   const markAll=useCallback(mn=>{
     const m=MONTHS.find(x=>x.month===mn);
     setDone(prev=>{const next={...prev};m.topics.forEach((t,ti)=>t.items.forEach((_,ii)=>{next[`m${mn}_t${ti}_i${ii}`]=true;}));ls.set("rmx_done",next);setConfetti(mn);return next;});
@@ -543,8 +895,35 @@ export default function App(){
     setDone(prev=>{const next={...prev};m.topics.forEach((t,ti)=>t.items.forEach((_,ii)=>{delete next[`m${mn}_t${ti}_i${ii}`];}));ls.set("rmx_done",next);return next;});
   },[]);
   const toggleBkm=useCallback(mn=>{setBkm(prev=>{const next={...prev,[mn]:!prev[mn]};ls.set("rmx_bkm",next);return next;});},[] );
-  useEffect(()=>{if(confetti!=null){const t=setTimeout(()=>setConfetti(null),3000);return()=>clearTimeout(t);}},[confetti]);
-  useEffect(()=>{ls.set("rmx_wfocus",weekFocus);},[weekFocus]);
+  
+  useEffect(()=>{if(confetti!=null){const t=setTimeout(()=>setConfetti(null),3500);return()=>clearTimeout(t);}},[confetti]);
+  
+  useEffect(() => {
+    if (isFirstRender.current) {
+      return;
+    }
+    setSyncState("saving");
+    const t = setTimeout(() => {
+      setSyncState("saved");
+    }, 700);
+    return () => clearTimeout(t);
+  }, [done]);
+
+  useEffect(() => {
+    ls.set("rmx_wfocus", weekFocus);
+    if (isFirstRender.current) {
+      return;
+    }
+    setSyncState("saving");
+    const t = setTimeout(() => {
+      setSyncState("saved");
+    }, 700);
+    return () => clearTimeout(t);
+  }, [weekFocus]);
+
+  useEffect(() => {
+    isFirstRender.current = false;
+  }, []);
 
   const allItems=MONTHS.reduce((s,m)=>s+totalItems(m),0);
   const allDone=MONTHS.reduce((s,m)=>s+doneItems(m,done),0);
@@ -589,100 +968,255 @@ export default function App(){
         </div>
       )}
 
-      <div style={{background:"rgba(10, 22, 40, 0.45)",borderBottom:`1px solid ${BDR}`,padding:"14px 18px 6px",position:"sticky",top:0,zIndex:100,backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)"}}>
-        <div style={{display:"flex",alignItems:"center",justify:"space-between",marginBottom:"12px",gap:"12px",flexWrap:"wrap",justifyContent:"space-between"}}>
-          <div style={{display:"flex",alignItems:"center",gap:"10px"}}>
-            <div style={{width:"32px",height:"32px",borderRadius:"10px",background:"linear-gradient(135deg,#FF2D78,#7C3AED,#F97316)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:"14px",boxShadow:"0 4px 14px rgba(255,45,120,0.3)"}}>⚙</div>
-            <div>
-              <div style={{fontSize:"15px",fontWeight:"900",color:T1,letterSpacing:"-0.5px",background:"linear-gradient(135deg,#FFF,#A78BFA)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",backgroundClip:"text"}}>Flow 16</div>
+      {/* Redesigned Premium Responsive Layout */}
+      <div className="max-w-[1400px] mx-auto px-4 py-4 md:py-6 lg:px-8 grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 relative z-10">
+        
+        {/* Left Column (Premium Dashboard Control Sidebar) */}
+        <aside className="space-y-5 lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:overflow-y-auto no-scrollbar">
+          {/* Brand Logo Card */}
+          <div style={{
+            background: "linear-gradient(135deg, rgba(16, 36, 66, 0.45), rgba(10, 22, 40, 0.25))",
+            border: `1.5px solid rgba(255, 255, 255, 0.08)`,
+            borderRadius: "16px",
+            padding: "24px",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            position: "relative",
+            overflow: "hidden"
+          }}>
+            <div style={{
+              fontSize: "32px",
+              fontWeight: "900",
+              fontStyle: "italic",
+              fontFamily: "'Playfair Display', serif",
+              background: "linear-gradient(135deg, #FFFFFF, #A78BFA, #FF2D78)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              lineHeight: 1,
+              userSelect: "none"
+            }}>
+              Flow 16
+            </div>
+            <div style={{ fontSize: "10px", color: T3, letterSpacing: "1.5px", marginTop: "6px", fontWeight: "700" }}>
+              SYSTEMS & AI ARCHITECT ROADMAP
             </div>
           </div>
-          <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-            {[{l:"Topics",v:`${allDone}/${allItems}`,c:"#22D3EE"},{l:"Months",v:`${compMonths}/12`,c:"#10B981"},{l:"Progress",v:`${totalPct}%`,c:"#FBBF24"}].map(s=>(
-              <div key={s.l} style={{padding:"5px 10px",background:`${s.c}0E`,border:`1px solid ${s.c}22`,borderRadius:"7px",textAlign:"center",backdropFilter:"blur(8px)"}}>
-                <div style={{fontSize:"13px",fontWeight:"800",color:s.c}}>{s.v}</div>
-                <div style={{fontSize:"8px",color:T3,letterSpacing:"0.5px"}}>{s.l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Visual Progress Bar Segment */}
-        <div style={{marginTop:"6px",marginBottom:"12px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:"9px",color:T3,marginBottom:"4px",fontWeight:"700",letterSpacing:"0.5px"}}>
-            <span>ROADMAP MASTERY PROGRESS</span>
-            <span style={{color:"#FF2D78",fontWeight:"800"}}>{totalPct}% COMPLETE</span>
-          </div>
-          <div style={{height:"8px",background:"rgba(255,255,255,0.03)",borderRadius:"99px",overflow:"hidden",position:"relative",border:"1px solid rgba(255,255,255,0.05)"}}>
-            <div style={{height:"100%",width:`${totalPct}%`,background:"linear-gradient(90deg,#FF2D78,#7C3AED,#F97316)",borderRadius:"99px",transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)",boxShadow:"0 0 12px rgba(255,45,120,0.4)"}}/>
-            <div style={{position:"absolute",left:"25%",top:0,bottom:0,width:"1px",background:"rgba(255,255,255,0.12)"}} title="Phase 2 Start"/>
-            <div style={{position:"absolute",left:"50%",top:0,bottom:0,width:"1px",background:"rgba(255,255,255,0.12)"}} title="Phase 3 Start"/>
-            <div style={{position:"absolute",left:"75%",top:0,bottom:0,width:"1px",background:"rgba(255,255,255,0.12)"}} title="Phase 4 Start"/>
-          </div>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:"8px",color:T3,marginTop:"4px",fontWeight:"500"}}>
-            <span>Phase 1 (M1-3)</span>
-            <span>Phase 2 (M4-6)</span>
-            <span>Phase 3 (M7-9)</span>
-            <span>Phase 4 (M10-12)</span>
-          </div>
-        </div>
-
-        {/* Search Input Bar */}
-        <div style={{position:"relative",marginBottom:"12px"}}>
-          <span style={{position:"absolute",left:"10px",top:"50%",transform:"translateY(-50%)",fontSize:"12px",color:T3}}>🔍</span>
-          <input 
-            type="text" 
-            value={searchQuery} 
-            onChange={e => setSearchQuery(e.target.value)} 
-            placeholder="Search topics, modules, tools, concepts, or resources... (e.g., 'Python', 'mmap', 'git')" 
-            style={{
-              width: "100%",
-              background: "rgba(10, 22, 40, 0.6)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "8px",
-              padding: "8px 30px 8px 30px",
-              color: T1,
-              fontSize: "12px",
-              outline: "none",
-              transition: "all 0.2s"
-            }}
-          />
-          {searchQuery && (
-            <button 
-              onClick={() => setSearchQuery("")} 
+          {/* This Week's Focus - integrated directly into Sidebar as a sacred focal point! */}
+          <div style={{
+            background: CARD,
+            border: `1px solid ${BDR}`,
+            borderRadius: "16px",
+            padding: "20px",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)"
+          }}>
+            <div style={{ fontSize: "10px", color: "#22D3EE", fontWeight: "800", letterSpacing: "1.5px", marginBottom: "10px", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span>🎯</span> WEEK'S SACRED FOCUS
+            </div>
+            <textarea 
+              value={weekFocus} 
+              onChange={e => setWeekFocus(e.target.value)}
+              placeholder="What are you studying this week? e.g. Month 3 testing + async..."
+              rows={3} 
               style={{
-                position: "absolute",
-                right: "10px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                color: T3,
-                cursor: "pointer",
-                fontSize: "12px"
+                width: "100%",
+                background: "rgba(5, 14, 30, 0.45)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "10px",
+                padding: "10px 12px",
+                color: T2,
+                fontSize: "11px",
+                lineHeight: "1.6",
+                resize: "none",
+                outline: "none",
+                transition: "border-color 0.2s"
               }}
-            >
-              ✕
-            </button>
-          )}
-        </div>
+              onFocus={e => e.target.style.borderColor = "#22D3EE"}
+              onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.08)"}
+            />
+          </div>
 
-        <div style={{display:"flex",overflowX:"auto"}}>
-          {[["roadmap","🗺 Roadmap"],["library","📚 Library"],["tracks","⚡ Tracks"],["progress","📊 Progress"]].map(([k,l])=>(
-            <button key={k} className="rm-tab" onClick={()=>setTab(k)} style={ts(k)}>{l}</button>
-          ))}
-        </div>
-      </div>
+          {/* Recharts Progress Visualization Chart */}
+          <RoadmapChart done={done} />
+        </aside>
 
-      <div style={{padding:"16px 16px 80px"}}>
+        {/* Right Column (Main View Panel) */}
+        <main className="space-y-6">
+          {/* Header Action & Tab Bar (Glassmorphic) */}
+          <div style={{
+            background: "rgba(10, 22, 40, 0.55)",
+            border: `1px solid ${BDR}`,
+            borderRadius: "18px",
+            padding: "16px 20px",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            position: "sticky",
+            top: "16px",
+            zIndex: 100,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.5)"
+          }}>
+            {/* Search Input Bar */}
+            <div style={{ position: "relative", marginBottom: "14px" }}>
+              <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "14px", color: T3 }}>🔍</span>
+              <input 
+                type="text" 
+                value={searchQuery} 
+                onChange={e => setSearchQuery(e.target.value)} 
+                placeholder="Search topics, modules, tools, concepts, or resources... (e.g., 'Python', 'mmap', 'git')" 
+                style={{
+                  width: "100%",
+                  background: "rgba(5, 14, 30, 0.6)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "10px",
+                  padding: "10px 16px 10px 36px",
+                  color: T1,
+                  fontSize: "12.5px",
+                  outline: "none",
+                  transition: "all 0.25s"
+                }}
+                onFocus={e => e.target.style.borderColor = "#7C3AED"}
+                onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.08)"}
+              />
+              {searchQuery && (
+                <button 
+                  onClick={() => setSearchQuery("")} 
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    color: T3,
+                    cursor: "pointer",
+                    fontSize: "12px"
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Tab selection buttons with cloud sync status */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: "6px", overflowX: "auto" }} className="no-scrollbar">
+                {[["roadmap","🗺 Roadmap"], ["library","📚 Library"], ["tracks","⚡ Tracks"], ["progress","📊 Progress"]].map(([k,l])=>(
+                  <button key={k} className="rm-tab" onClick={()=>setTab(k)} style={ts(k)}>{l}</button>
+                ))}
+              </div>
+              
+              {/* Cloud Sync Simulator indicator */}
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                padding: "6px 12px",
+                borderRadius: "20px",
+                fontSize: "11px",
+                color: syncState === "saving" ? "#A78BFA" : "#10F5A0",
+                fontWeight: "700",
+                letterSpacing: "0.2px",
+                transition: "all 0.3s ease",
+                boxShadow: syncState === "saving" ? "0 0 12px rgba(167,139,250,0.15)" : "none"
+              }}>
+                {syncState === "saving" ? (
+                  <>
+                    <span style={{
+                      display: "inline-block",
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      background: "#A78BFA",
+                      boxShadow: "0 0 8px #A78BFA"
+                    }} />
+                    <span>Syncing cloud...</span>
+                  </>
+                ) : (
+                  <>
+                    <span style={{ fontSize: "12px", color: "#10F5A0" }}>☁️</span>
+                    <span>All changes saved</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Active View Container */}
+          <div style={{ animation: "fadeIn .3s ease both" }}>
 
         {tab==="roadmap"&&(
           <div>
-            <div style={{background:CARD,border:`1px solid ${BDR}`,borderRadius:"11px",padding:"13px 15px",marginBottom:"18px"}}>
-              <div style={{fontSize:"9px",color:"#22D3EE",fontWeight:"700",letterSpacing:"1.5px",marginBottom:"7px"}}>🎯 THIS WEEK'S FOCUS</div>
-              <textarea value={weekFocus} onChange={e=>setWeekFocus(e.target.value)}
-                placeholder="What are you studying this week? e.g. Month 3 testing + async, LeetCode sliding window, open PR on CPython..."
-                rows={2} style={{width:"100%",background:"rgba(255,255,255,0.03)",border:`1px solid ${BDR}`,borderRadius:"7px",padding:"8px 11px",color:T2,fontSize:"11px",lineHeight:1.6,resize:"none"}}/>
+            {/* Horizontally Scrollable Category & Difficulty Filters with Glassmorphism */}
+            <div style={{background:"rgba(10, 25, 47, 0.22)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)", border:`1px solid ${BDR}`, borderRadius:"12px", padding:"12px 14px", marginBottom:"18px", boxShadow:"0 8px 32px rgba(0,0,0,0.3)"}}>
+              <div style={{display:"flex", flexDirection:"column", gap:"10px"}}>
+                {/* Difficulty Filter */}
+                <div>
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"6px"}}>
+                    <span style={{fontSize:"9.5px", color:T3, fontWeight:"800", letterSpacing:"1.2px", textTransform:"uppercase"}}>Filter by Difficulty</span>
+                    {selectedDiff !== "All" && (
+                      <button onClick={() => setSelectedDiff("All")} style={{background:"none", border:"none", color:"#FF2D78", fontSize:"9.5px", fontWeight:"700", cursor:"pointer"}}>Clear</button>
+                    )}
+                  </div>
+                  <div style={{display:"flex", gap:"6px", overflowX:"auto", paddingBottom:"2px"}} className="no-scrollbar">
+                    {DIFFS.map(d => {
+                      const active = selectedDiff === d;
+                      const count = MONTHS.flatMap(m => m.topics).filter(t => d === "All" || t.diff === d).length;
+                      return (
+                        <button key={d} className="rm-btn" onClick={() => setSelectedDiff(d)}
+                          style={{
+                            padding:"5px 11px",
+                            borderRadius:"20px",
+                            fontSize:"10px",
+                            fontWeight:"700",
+                            whiteSpace:"nowrap",
+                            background: active ? "linear-gradient(135deg, #FF2D78, #7C3AED)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${active ? "#FF2D78" : BDR}`,
+                            color: active ? T1 : T2,
+                            transition: "all 0.2s"
+                          }}>
+                          {d === "All" ? "🔥 All Levels" : d} <span style={{fontSize:"8.5px", opacity: active ? 0.9 : 0.6, marginLeft:"3px"}}>({count})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                
+                {/* Domain Filter */}
+                <div>
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"6px"}}>
+                    <span style={{fontSize:"9.5px", color:T3, fontWeight:"800", letterSpacing:"1.2px", textTransform:"uppercase"}}>Filter by Technology Domain</span>
+                    {selectedDomain !== "All" && (
+                      <button onClick={() => setSelectedDomain("All")} style={{background:"none", border:"none", color:"#22D3EE", fontSize:"9.5px", fontWeight:"700", cursor:"pointer"}}>Clear</button>
+                    )}
+                  </div>
+                  <div style={{display:"flex", gap:"6px", overflowX:"auto", paddingBottom:"2px"}} className="no-scrollbar">
+                    {DOMAINS.map(dom => {
+                      const active = selectedDomain === dom;
+                      const count = MONTHS.flatMap(m => m.topics.map(t => ({ t, m }))).filter(({ t, m }) => dom === "All" || getTopicDomain(t, m) === dom).length;
+                      return (
+                        <button key={dom} className="rm-btn" onClick={() => setSelectedDomain(dom)}
+                          style={{
+                            padding:"5px 11px",
+                            borderRadius:"20px",
+                            fontSize:"10px",
+                            fontWeight:"700",
+                            whiteSpace:"nowrap",
+                            background: active ? "linear-gradient(135deg, #7C3AED, #22D3EE)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${active ? "#7C3AED" : BDR}`,
+                            color: active ? T1 : T2,
+                            transition: "all 0.2s"
+                          }}>
+                          {dom === "All" ? "💻 All Domains" : dom} <span style={{fontSize:"8.5px", opacity: active ? 0.9 : 0.6, marginLeft:"3px"}}>({count})</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {PHASES.map(phase=>(
@@ -701,7 +1235,15 @@ export default function App(){
                 {MONTHS.filter(m=>m.phase===phase.id).map((month,idx)=>{
                   const isMatch = matchesSearch(month, searchQuery);
                   if (!isMatch) return null;
-                  const isExp = exp === month.month || (searchQuery.trim() !== "" && isMatch);
+
+                  const hasMatchingTopics = month.topics.some(topic => {
+                    const matchesDiff = selectedDiff === "All" || topic.diff === selectedDiff;
+                    const matchesDom = selectedDomain === "All" || getTopicDomain(topic, month) === selectedDomain;
+                    return matchesDiff && matchesDom;
+                  });
+                  if (!hasMatchingTopics) return null;
+
+                  const isExp = exp === month.month || (searchQuery.trim() !== "" && isMatch) || (selectedDiff !== "All" || selectedDomain !== "All");
                   const p=pct(month,done);
                   const ph=PHASES[month.phase-1];
                   const isBkm=bkm[month.month];
@@ -745,35 +1287,88 @@ export default function App(){
                           <div style={{display:"flex",gap:"6px",marginBottom:"13px",flexWrap:"wrap",alignItems:"center"}}>
                             <div style={{fontSize:"10px",color:T3}}><span style={{color:ph.c,fontWeight:"700"}}>{comp}</span>/{tot} done</div>
                             <div style={{flex:1}}/>
-                            <button className="rm-btn" onClick={()=>setNoteOpen(p=>({...p,[month.month]:!p[month.month]}))} style={{padding:"3px 9px",borderRadius:"5px",border:`1px solid ${BDR2}`,background:"rgba(255,255,255,0.03)",color:noteOpen[month.month]?T1:T2,fontSize:"9px",fontWeight:"600"}}>📝 {noteOpen[month.month]?"Hide":"Month Note"}</button>
+                            <button className="rm-btn" onClick={()=>setActiveNoteMonth(month.month)} style={{padding:"4px 10px",borderRadius:"5px",border:`1px solid ${BDR2}`,background:"rgba(255,255,255,0.03)",color:T1,fontSize:"9px",fontWeight:"700",display:"flex",alignItems:"center",gap:"4px"}}>📝 Personal Notes</button>
                             <button className="rm-btn" onClick={()=>setResOpen(p=>({...p,[month.month]:!p[month.month]}))} style={{padding:"3px 9px",borderRadius:"5px",border:`1px solid ${ph.c}30`,background:`${ph.c}0C`,color:ph.c,fontSize:"9px",fontWeight:"600"}}>📚 Resources</button>
                             <button className="rm-btn" onClick={()=>markAll(month.month)} style={{padding:"3px 9px",borderRadius:"5px",border:`1px solid ${ph.c}38`,background:`${ph.c}12`,color:ph.c,fontSize:"9px",fontWeight:"700"}}>✓ Mark All</button>
                             <button className="rm-btn" onClick={()=>resetMonth(month.month)} style={{padding:"3px 7px",borderRadius:"5px",border:`1px solid ${BDR}`,background:"transparent",color:T3,fontSize:"9px"}}>↺ Reset</button>
                           </div>
-                          {noteOpen[month.month]&&(
-                            <div style={{marginBottom:"12px",animation:"fadeIn .2s ease"}}>
-                              <textarea defaultValue={ls.get(`rmx_mnote_${month.month}`,"")} onChange={e=>ls.set(`rmx_mnote_${month.month}`,e.target.value)}
-                                placeholder="Month-level notes, plans, reflections..." rows={2}
-                                style={{width:"100%",background:"rgba(255,255,255,0.03)",border:`1px solid ${BDR2}`,borderRadius:"7px",padding:"9px 11px",color:T2,fontSize:"11px",lineHeight:1.6,resize:"vertical"}}/>
-                            </div>
-                          )}
+
+                          {/* Beautiful hand-written note preview */}
+                          {(() => {
+                            const note = ls.get(`rmx_module_notes_${month.month}`, "");
+                            if (!note) return null;
+                            return (
+                              <div onClick={() => setActiveNoteMonth(month.month)} style={{
+                                background: "rgba(255,255,255,0.01)",
+                                border: `1.5px dashed ${ph.c}40`,
+                                borderRadius: "10px",
+                                padding: "12px 14px",
+                                marginBottom: "14px",
+                                fontSize: "12px",
+                                color: T2,
+                                lineHeight: "1.6",
+                                cursor: "pointer",
+                                position: "relative",
+                                display: "flex",
+                                alignItems: "flex-start",
+                                gap: "10px",
+                                transition: "all 0.25s ease",
+                                boxShadow: `inset 0 0 12px ${ph.c}05`
+                              }} className="hover:border-indigo-400 group">
+                                <span style={{ fontSize: "16px", marginTop: "-1px" }}>✍️</span>
+                                <div style={{ flex: 1 }}>
+                                  <span style={{ fontWeight: "800", color: ph.c, fontSize: "9px", textTransform: "uppercase", letterSpacing: "1px", display: "block", marginBottom: "4px" }}>MODULE MEMO</span>
+                                  <span className="italic" style={{ color: T1 }}>"{note}"</span>
+                                </div>
+                                <span style={{ fontSize: "10px", color: T3, alignSelf: "center" }}>Edit ✎</span>
+                              </div>
+                            );
+                          })()}
                           {resOpen[month.month]&&<Resources monthNum={month.month} color={ph.c}/>}
                           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:"7px",marginBottom:"9px"}}>
                             {month.topics.map((topic,ti)=>{
+                              const matchesDiff = selectedDiff === "All" || topic.diff === selectedDiff;
+                              const matchesDom = selectedDomain === "All" || getTopicDomain(topic, month) === selectedDomain;
+                              if (!matchesDiff || !matchesDom) return null;
+
                               const isTopicMatch = !searchQuery.trim() || 
                                 topic.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) || 
                                 topic.items.some(item => item.toLowerCase().includes(searchQuery.toLowerCase().trim()));
                               if (!isTopicMatch) return null;
+
                               const topDone=topic.items.filter((_,ii)=>done[`m${month.month}_t${ti}_i${ii}`]).length;
+                              const isAllDone = topDone === topic.items.length;
+                              const isPartDone = topDone > 0 && topDone < topic.items.length;
                               const dc=DIFF_C[topic.diff]||T3;
                               const csKey=`${month.month}_${ti}`;
                               const csIsOpen=csOpen[csKey];
                               return(
-                                <div key={ti} style={{background:CARD,border:`1px solid ${BDR}`,borderRadius:"9px",padding:"12px",position:"relative",overflow:"visible"}}>
+                                <div key={ti} style={{background:CARD,border:`1px solid ${isAllDone ? ph.c + "33" : BDR}`,borderRadius:"9px",padding:"12px",position:"relative",overflow:"visible",transition:"border-color 0.2s"}}>
                                   <div style={{position:"absolute",top:0,left:0,right:0,height:"2px",background:"rgba(255,255,255,0.04)",borderRadius:"9px 9px 0 0"}}>
                                     <div style={{height:"100%",width:`${(topDone/topic.items.length)*100}%`,background:`linear-gradient(90deg,${ph.c},${ph.c2})`,transition:"width .6s ease"}}/>
                                   </div>
-                                  <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"9px",marginTop:"3px"}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"9px",marginTop:"3px"}}>
+                                    {/* Interactive Topic Checkbox */}
+                                    <div onClick={(e)=>{e.stopPropagation(); toggleTopicDone(month.month, ti, topic);}}
+                                      style={{
+                                        width:"14px",
+                                        height:"14px",
+                                        borderRadius:"4px",
+                                        flexShrink:0,
+                                        border:`1.5px solid ${isAllDone ? ph.c : (isPartDone ? `${ph.c}95` : "rgba(255,255,255,0.22)")}`,
+                                        background:isAllDone ? `${ph.c}20` : (isPartDone ? `${ph.c}0E` : "transparent"),
+                                        display:"flex",
+                                        alignItems:"center",
+                                        justifyContent:"center",
+                                        cursor:"pointer",
+                                        transition:"all .2s ease",
+                                      }}
+                                      className="rm-check"
+                                      title={isAllDone ? "Reset whole topic" : "Mark whole topic as completed"}>
+                                      {isAllDone && <span style={{fontSize:"9px",color:ph.c,fontWeight:"bold",lineHeight:1}}>✓</span>}
+                                      {isPartDone && <div style={{width:"5px",height:"1.5px",background:ph.c,borderRadius:"1px"}}/>}
+                                    </div>
+
                                     <div style={{flex:1,fontSize:"10px",fontWeight:"700",color:ph.c,textTransform:"uppercase",letterSpacing:"0.4px",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{highlightText(topic.name, searchQuery, ph.c)}</div>
                                     <span style={{fontSize:"7px",fontWeight:"700",color:dc,padding:"1px 5px",background:`${dc}0E`,borderRadius:"3px",border:`1px solid ${dc}22`,letterSpacing:"0.3px",flexShrink:0}}>{topic.diff}</span>
                                     <span style={{fontSize:"8px",color:topDone===topic.items.length?"#10B981":T3,fontWeight:"600",flexShrink:0}}>{topDone}/{topic.items.length}</span>
@@ -1067,7 +1662,16 @@ export default function App(){
           </div>
         )}
       </div>
-      <Pomodoro/>
-    </div>
+    </main>
+  </div>
+
+  {/* Persistent Note Drawer */}
+  <ModuleNoteDrawer activeMonth={activeNoteMonth} onClose={() => setActiveNoteMonth(null)} onSave={triggerSaveSync} />
+
+  {/* Celebratory Animation Overlay */}
+  <CelebrationOverlay active={confetti !== null} />
+
+  <Pomodoro/>
+</div>
   );
 }
