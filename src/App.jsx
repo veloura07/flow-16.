@@ -2328,6 +2328,7 @@ export default function App(){
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [editableNotes, setEditableNotes] = useState("");
   const [notesSavedStatus, setNotesSavedStatus] = useState("");
+  const [vesselSettingsOpen, setVesselSettingsOpen] = useState(false);
 
   const handleGenerateLesson = async (selectedPresetTopic) => {
     const finalTopic = selectedPresetTopic || customAcademyTopic;
@@ -4065,296 +4066,296 @@ export default function App(){
             </button>
           </div>
 
-          {/* Drawer Scrollable Body Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar">
-            
-            {/* 1. Google Cloud Sync & Auth Section */}
-            <div 
-              className="border border-white/10 p-5 space-y-4 shadow-xl rounded-2xl" 
-              style={{ 
-                background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)"
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono tracking-[0.12em] font-black text-[#A78BFA] flex items-center gap-1.5 uppercase">
-                  <span>☁️</span> CLOUD SYNC & AUTHENTICATION
-                </span>
-                {user && (
-                  <span className="text-[8px] font-mono font-black text-[#10F5A0] flex items-center gap-1.5 bg-[#10F5A0]/10 px-2.5 py-1 rounded-full border border-[#10F5A0]/25 shadow-[0_0_10px_rgba(16,245,160,0.15)]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#10F5A0] animate-pulse" />
-                    CONNECTED
-                  </span>
-                )}
+          {/* 1. Top Profile Section (Pinned below Header) */}
+          <div className="p-4 border-b border-white/10 bg-slate-900/40 flex-shrink-0">
+            {authLoading ? (
+              <div className="py-3 text-center text-slate-400 text-xs font-mono animate-pulse flex flex-col items-center justify-center gap-1.5">
+                <span className="w-3.5 h-3.5 border-2 border-[#A78BFA]/30 border-t-[#A78BFA] rounded-full animate-spin" />
+                <span className="text-[10px] tracking-wide">Verifying secure workspace handshake…</span>
               </div>
-
-              {authLoading ? (
-                <div className="py-6 text-center text-slate-400 text-xs font-mono animate-pulse flex flex-col items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-[#A78BFA]/30 border-t-[#A78BFA] rounded-full animate-spin" />
-                  <span>Verifying secure workspace handshake…</span>
+            ) : user ? (
+              /* Connected User Profile Block */
+              <div className="flex items-center justify-between bg-white/[0.02] border border-white/5 rounded-2xl p-3.5 shadow-lg relative overflow-hidden">
+                {/* Visual Ambient Glow */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#A78BFA]/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="relative flex-shrink-0">
+                    {user.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={user.displayName}
+                        referrerPolicy="no-referrer"
+                        className="w-10 h-10 rounded-full border-2 border-[#A78BFA] shadow-[0_0_12px_rgba(167,139,250,0.25)] object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-[#A78BFA]/20 border-2 border-[#A78BFA] text-[#A78BFA] flex items-center justify-center font-mono font-black text-sm shadow-[0_0_12px_rgba(167,139,250,0.15)]">
+                        {user.displayName ? user.displayName[0].toUpperCase() : "U"}
+                      </div>
+                    )}
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#10F5A0] border-2 border-slate-950 animate-pulse" />
+                  </div>
+                  
+                  <div className="min-w-0 font-mono">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-black text-slate-100 truncate max-w-[150px]">
+                        {user.displayName || "Explorer"}
+                      </span>
+                      {user.isSandbox ? (
+                        <span className="text-[7px] tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase font-black">
+                          SANDBOX
+                        </span>
+                      ) : (
+                        <span className="text-[7px] tracking-wider px-1.5 py-0.5 rounded-full bg-[#10F5A0]/10 text-[#10F5A0] border border-[#10F5A0]/20 uppercase font-black">
+                          SECURE
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[9px] text-slate-400 truncate mt-0.5 max-w-[200px]">
+                      {user.email || "sandbox@flow16.local"}
+                    </div>
+                    <div className="text-[8px] font-bold text-slate-500 flex items-center gap-1 mt-1">
+                      <span className="inline-block w-1 h-1 rounded-full bg-[#10F5A0]" />
+                      CLOUD METRICS ACTIVE
+                    </div>
+                  </div>
                 </div>
-              ) : !user ? (
-                <div className="space-y-4">
-                  <p className="text-[11px] text-slate-400 leading-relaxed font-mono">
-                    Connect your secure Google workspace to synchronize and back up roadmap items, notebooks, custom cheat sheets, bookmarks, and habit metrics.
-                  </p>
+
+                {/* Small Disconnect Link/Button */}
+                <button
+                  onClick={handleDisconnect}
+                  className="flex-shrink-0 px-2.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/10 hover:border-red-500/30 text-red-400 text-[8px] font-mono font-bold tracking-wider transition-all duration-200 uppercase"
+                >
+                  LOGOUT
+                </button>
+              </div>
+            ) : (
+              /* Unauthenticated Session / Google Sign In Form */
+              <div className="bg-white/[0.01] border border-white/5 rounded-2xl p-4 shadow-lg space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-slate-800/40 border border-white/10 text-slate-400 flex items-center justify-center">
+                    <User className="w-4 h-4 text-slate-400" />
+                  </div>
+                  <div className="font-mono">
+                    <div className="text-xs font-bold text-slate-200">SESSION HANDSHAKE</div>
+                    <div className="text-[9px] text-slate-500">Connect progress to Google Cloud or Sandbox</div>
+                  </div>
+                </div>
+
+                {authError && (
+                  <div className="p-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-[9px] font-mono text-red-400 leading-normal">
+                    ⚠ {authError}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 gap-2.5">
                   <button
                     onClick={handleGoogleSignIn}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[#A78BFA]/20 bg-gradient-to-r from-[#A78BFA]/10 to-[#8B5CF6]/15 text-xs font-mono font-black text-white hover:bg-gradient-to-r hover:from-[#A78BFA]/15 hover:to-[#8B5CF6]/25 hover:border-[#A78BFA]/40 shadow-[0_0_15px_rgba(167,139,250,0.1)] hover:shadow-[0_0_25px_rgba(167,139,250,0.25)] transition-all duration-300"
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-[#A78BFA]/20 bg-[#A78BFA]/5 hover:bg-[#A78BFA]/10 text-[9px] font-mono font-bold text-slate-300 hover:text-white transition-all duration-300 shadow-sm"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" className="flex-shrink-0">
                       <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114A5.514 5.514 0 0 1 8.5 13c0-3.04 2.46-5.514 5.5-5.514 1.342 0 2.57.486 3.524 1.286l3.057-3.057C18.733 3.943 16.514 3 14 3a10 10 0 0 0-10 10 10 10 0 0 0 10 10c5.52 0 10-4.48 10-10 0-.685-.06-1.354-.171-2H12.24z"/>
                     </svg>
                     CONNECT GOOGLE IDENTITY
                   </button>
 
-                  {authError && (
-                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-[10px] font-mono text-red-400 leading-normal">
-                      ⚠ {authError}
-                    </div>
-                  )}
-
-                  <div className="pt-3 border-t border-white/5 space-y-3">
-                    <div className="text-[8px] font-mono tracking-[0.15em] text-slate-500 text-center uppercase font-black">
-                      — OR BYPASS IFRAME WITH SANDBOX ACCESS —
-                    </div>
-                    <form onSubmit={handleSandboxLogin} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={sandboxName}
-                        onChange={e => setSandboxName(e.target.value)}
-                        placeholder="Enter hacker name (e.g. Neo)..."
-                        className="flex-1 bg-slate-950/40 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-[#A78BFA]/40 focus:ring-1 focus:ring-[#A78BFA]/10 transition-all duration-200"
-                      />
-                      <button
-                        type="submit"
-                        disabled={!sandboxName.trim()}
-                        className="px-4 py-2 rounded-xl bg-[#A78BFA]/10 border border-[#A78BFA]/30 text-[#A78BFA] hover:bg-[#A78BFA]/20 text-[10px] font-mono font-black tracking-widest transition-all disabled:opacity-40 disabled:hover:bg-[#A78BFA]/10"
-                      >
-                        LOGIN
-                      </button>
-                    </form>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4 bg-slate-950/40 p-4 rounded-xl border border-white/5 shadow-inner">
-                    {user.photoURL ? (
-                      <div className="relative">
-                        <img
-                          src={user.photoURL}
-                          alt={user.displayName}
-                          referrerPolicy="no-referrer"
-                          className="w-11 h-11 rounded-full border-2 border-[#A78BFA] shadow-[0_0_15px_rgba(167,139,250,0.3)] object-cover"
-                        />
-                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#10F5A0] border-2 border-slate-950 animate-pulse" />
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <div className="w-11 h-11 rounded-full bg-[#A78BFA] text-black flex items-center justify-center font-mono font-black text-base shadow-[0_0_15px_rgba(167,139,250,0.3)]">
-                          {user.displayName ? user.displayName[0].toUpperCase() : "U"}
-                        </div>
-                        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#10F5A0] border-2 border-slate-950 animate-pulse" />
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1 font-mono">
-                      <div className="text-xs font-black text-slate-100 truncate flex items-center gap-2">
-                        <span>{user.displayName || "Explorer"}</span>
-                        {user.isSandbox && (
-                          <span className="text-[8px] tracking-widest px-2 py-0.5 rounded-full bg-[#A78BFA]/15 text-[#A78BFA] border border-[#A78BFA]/35 uppercase font-black">
-                            SANDBOX
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[10px] text-slate-500 truncate mt-0.5">{user.email}</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleDisconnect}
-                    className="w-full py-2 rounded-xl border border-red-500/15 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/30 text-red-400 text-[10px] font-mono font-black tracking-widest uppercase transition-all duration-200"
-                  >
-                    DISCONNECT IDENTITY
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 2. Systems Copilot & High-Thinking Oracle Section */}
-            <div 
-              className="border border-white/10 p-5 flex flex-col space-y-4 shadow-xl rounded-2xl" 
-              style={{ 
-                background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)"
-              }}
-            >
-              {/* Tabs Navigation */}
-              <div className="flex p-1 rounded-xl bg-slate-950/40 border border-white/5 gap-1 shadow-inner">
-                <button
-                  onClick={() => {
-                    setActivePortalTab("chat");
-                    playSweepSound(audioEnabled, true);
-                  }}
-                  className={`flex-1 py-1.5 rounded-lg text-[9px] tracking-widest font-mono font-black transition-all duration-200 flex items-center justify-center gap-1.5 ${
-                    activePortalTab === "chat"
-                      ? "bg-[#A78BFA]/10 border border-[#A78BFA]/20 text-[#A78BFA] shadow-[0_2px_8px_rgba(167,139,250,0.15)]"
-                      : "text-slate-400 hover:text-slate-200 border border-transparent"
-                  }`}
-                >
-                  <span>💬</span> COPILOT CHAT
-                </button>
-                <button
-                  onClick={() => {
-                    setActivePortalTab("academy");
-                    playSweepSound(audioEnabled, true);
-                  }}
-                  className={`flex-1 py-1.5 rounded-lg text-[9px] tracking-widest font-mono font-black transition-all duration-200 flex items-center justify-center gap-1.5 ${
-                    activePortalTab === "academy"
-                      ? "bg-[#A78BFA]/10 border border-[#A78BFA]/20 text-[#A78BFA] shadow-[0_2px_8px_rgba(167,139,250,0.15)]"
-                      : "text-slate-400 hover:text-slate-200 border border-transparent"
-                  }`}
-                >
-                  <span>🎓</span> SYSTEMS ACADEMY
-                </button>
-              </div>
-
-              {activePortalTab === "chat" ? (
-                <div className="space-y-4 flex flex-col">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono tracking-[0.12em] font-black text-[#A78BFA] uppercase">
-                      🧠 SYSTEMS AI COPILOT
-                    </span>
-                    
-                    {/* Thinking Mode Toggle Pill Button */}
-                    <button
-                      onClick={() => {
-                        setHighThinkingEnabled(prev => !prev);
-                        playSweepSound(audioEnabled, !highThinkingEnabled);
-                      }}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[9px] font-mono font-black transition-all duration-300 ${highThinkingEnabled ? "bg-[#A78BFA]/15 text-[#A78BFA] border-[#A78BFA]/30 shadow-[0_0_12px_rgba(167,139,250,0.2)]" : "bg-slate-950/40 text-slate-500 border-white/5"}`}
-                    >
-                      <Brain className={`w-3 h-3 ${highThinkingEnabled ? "animate-pulse" : ""}`} />
-                      THINKING: {highThinkingEnabled ? "HIGH" : "FAST"}
-                    </button>
+                  <div className="flex items-center gap-2 py-0.5">
+                    <span className="h-px bg-white/5 flex-1" />
+                    <span className="text-[7px] font-mono tracking-widest text-slate-600 uppercase font-black">OR BYPASS SECURE HANDSHAKE</span>
+                    <span className="h-px bg-white/5 flex-1" />
                   </div>
 
-                  <div className="text-[9px] font-mono text-slate-500 tracking-wider uppercase leading-relaxed">
-                    ENGINE: <span className="text-[#A78BFA] font-bold">{highThinkingEnabled ? "gemini-3.1-pro-preview" : "gemini-3.5-flash"}</span> // PROXY ENCRYPTION: ACTIVE
-                  </div>
-
-                  {/* Chat Display Window */}
-                  <div className="h-64 rounded-2xl bg-slate-950/40 border border-white/5 p-4 overflow-y-auto space-y-4 flex flex-col no-scrollbar shadow-inner">
-                    {aiMessages.map((msg, i) => (
-                      <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                        <span className="text-[8px] font-mono text-slate-500 mb-0.5 tracking-widest uppercase">
-                          {msg.role === "user" ? "EXPLORER" : "AI ENGINE"}
-                        </span>
-                        <div
-                          className={`max-w-[85%] rounded-2xl p-3 text-xs font-mono leading-relaxed whitespace-pre-wrap select-text shadow-sm ${msg.role === "user" ? "bg-gradient-to-br from-[#A78BFA]/15 to-[#8B5CF6]/10 border border-[#A78BFA]/25 text-white" : "bg-white/5 border border-white/5 text-slate-300"}`}
-                        >
-                          {msg.parts[0].text}
-                          
-                          {/* Search grounding citations */}
-                          {msg.role === "model" && msg.groundingChunks && msg.groundingChunks.length > 0 && (
-                            <div className="mt-2 pt-1.5 border-t border-white/5 space-y-1 select-none">
-                              <div className="text-[8px] font-mono text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                                <span>🔍</span> GROUNDED SEARCH SOURCES:
-                              </div>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {msg.groundingChunks.map((chunk, cIdx) => {
-                                  const uri = chunk.web?.uri;
-                                  const title = chunk.web?.title || uri;
-                                  if (!uri) return null;
-                                  return (
-                                    <a
-                                      key={cIdx}
-                                      href={uri}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 hover:bg-[#A78BFA]/10 hover:text-[#A78BFA] text-[9px] text-slate-300 transition-all duration-200 border border-white/5 hover:border-[#A78BFA]/30 max-w-[130px] truncate shadow-sm"
-                                      title={title}
-                                    >
-                                      <span className="text-[#A78BFA] font-bold">[{cIdx + 1}]</span>
-                                      <span className="truncate">{title}</span>
-                                    </a>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    
-                    {aiLoading && (
-                      <div className="flex flex-col items-start">
-                        <span className="text-[8px] font-mono text-[#A78BFA] mb-0.5 tracking-widest animate-pulse uppercase">
-                          THINKING PROCESS ACTIVE
-                        </span>
-                        <div className="bg-purple-500/5 border border-[#A78BFA]/10 rounded-2xl p-3.5 text-xs font-mono text-[#A78BFA] flex items-center gap-2.5">
-                          <span className="flex h-2 w-2 relative">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A78BFA] opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#A78BFA]"></span>
-                          </span>
-                          {highThinkingEnabled ? (
-                            <span>Simulating system pathways (high thinking level engaged)…</span>
-                          ) : (
-                            <span>Synthesizing flash response…</span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
- 
-                  {/* Quick Prompt Scrollable Row */}
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                    {[
-                      { label: "🐳 Docker Namespaces", prompt: "Explain how Docker uses Linux namespaces & cgroups to isolate processes." },
-                      { label: "💾 Database Locks", prompt: "What is the difference between Shared and Exclusive locks in Postgres, and how do deadlocks occur?" },
-                      { label: "⚡ CPU Cache", prompt: "Explain CPU cache lines, cache bouncing, and spatial/temporal locality with code examples." },
-                      { label: "📊 Postgres EXPLAIN", prompt: "How do I read a Postgres EXPLAIN ANALYZE query plan? Explain Seq Scan vs Index Scan." }
-                    ].map((item, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSendAiMessage(item.prompt)}
-                        disabled={aiLoading}
-                        className="flex-shrink-0 px-3 py-1.5 text-[9px] font-mono rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-[#A78BFA]/20 text-slate-300 hover:text-white transition-all duration-150 disabled:opacity-50 shadow-sm animate-fade-in"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Message Input Box */}
-                  <form onSubmit={e => { e.preventDefault(); handleSendAiMessage(); }} className="flex gap-2">
+                  <form onSubmit={handleSandboxLogin} className="flex gap-2">
                     <input
                       type="text"
-                      value={aiInput}
-                      onChange={e => setAiInput(e.target.value)}
-                      disabled={aiLoading}
-                      placeholder={aiLoading ? "Thinking..." : "Ask your systems oracle..."}
-                      className="flex-1 min-w-0 bg-slate-950/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-[#A78BFA]/40 focus:ring-1 focus:ring-[#A78BFA]/10 transition-all disabled:opacity-50"
+                      value={sandboxName}
+                      onChange={e => setSandboxName(e.target.value)}
+                      placeholder="Enter hacker handle (e.g. Neo)..."
+                      className="flex-1 bg-slate-950/60 border border-white/5 rounded-xl px-3 py-1.5 text-[10px] font-mono text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-[#A78BFA]/30 focus:ring-1 focus:ring-[#A78BFA]/15 transition-all"
                     />
                     <button
                       type="submit"
-                      disabled={aiLoading || !aiInput.trim()}
-                      className="p-2.5 rounded-xl bg-gradient-to-br from-[#A78BFA] to-[#8B5CF6] hover:brightness-110 disabled:bg-slate-800 disabled:text-slate-600 text-black font-black flex items-center justify-center transition-all duration-200 shadow-md"
+                      disabled={!sandboxName.trim()}
+                      className="px-3 py-1.5 rounded-xl bg-[#A78BFA]/10 border border-[#A78BFA]/20 text-[#A78BFA] hover:bg-[#A78BFA]/20 text-[9px] font-mono font-bold tracking-wider transition-all disabled:opacity-40"
                     >
-                      <Send className="w-4 h-4 text-black" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleClearChat}
-                      title="Clear conversation log"
-                      className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white transition-all duration-200 shadow-sm"
-                    >
-                      <Trash2 className="w-4 h-4" />
+                      LOGIN
                     </button>
                   </form>
                 </div>
-              ) : (
-                <div className="space-y-4 flex flex-col animate-fade-in">
+              </div>
+            )}
+          </div>
+
+          {/* 2. Tab Navigation Switcher (Pinned) */}
+          <div className="px-4 py-2 bg-slate-950/30 border-b border-white/10 flex-shrink-0 flex p-1 gap-1">
+            <button
+              onClick={() => {
+                setActivePortalTab("chat");
+                playSweepSound(audioEnabled, true);
+              }}
+              className={`flex-1 py-1.5 rounded-lg text-[9px] tracking-widest font-mono font-black transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                activePortalTab === "chat"
+                  ? "bg-[#A78BFA]/15 border border-[#A78BFA]/20 text-[#A78BFA] shadow-[0_2px_8px_rgba(167,139,250,0.15)]"
+                  : "text-slate-400 hover:text-slate-200 border border-transparent"
+              }`}
+            >
+              <span>💬</span> COPILOT CHAT
+            </button>
+            <button
+              onClick={() => {
+                setActivePortalTab("academy");
+                playSweepSound(audioEnabled, true);
+              }}
+              className={`flex-1 py-1.5 rounded-lg text-[9px] tracking-widest font-mono font-black transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                activePortalTab === "academy"
+                  ? "bg-[#A78BFA]/15 border border-[#A78BFA]/20 text-[#A78BFA] shadow-[0_2px_8px_rgba(167,139,250,0.15)]"
+                  : "text-slate-400 hover:text-slate-200 border border-transparent"
+              }`}
+            >
+              <span>🎓</span> SYSTEMS ACADEMY
+            </button>
+          </div>
+
+          {/* 3. Active View Panel (Fills remaining height) */}
+          <div className="flex-1 min-h-0 flex flex-col p-4 overflow-hidden relative">
+            {activePortalTab === "chat" ? (
+              /* COPILOT CHAT - Full height layout with pinned input */
+              <div className="flex-1 min-h-0 flex flex-col justify-between">
+                {/* Engine Metadata & Thinking Indicator */}
+                <div className="flex items-center justify-between mb-3 flex-shrink-0">
+                  <div className="flex flex-col font-mono">
+                    <span className="text-[10px] tracking-[0.12em] font-black text-[#A78BFA] uppercase">
+                      🧠 SYSTEMS AI COPILOT
+                    </span>
+                    <span className="text-[8px] text-slate-500 tracking-wider uppercase mt-0.5">
+                      ENGINE: <span className="text-[#A78BFA] font-black">{highThinkingEnabled ? "gemini-3.1-pro-preview" : "gemini-3.5-flash"}</span> // SECURE
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setHighThinkingEnabled(prev => !prev);
+                      playSweepSound(audioEnabled, !highThinkingEnabled);
+                    }}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[8px] font-mono font-bold transition-all duration-300 ${highThinkingEnabled ? "bg-[#A78BFA]/15 text-[#A78BFA] border-[#A78BFA]/30 shadow-[0_0_12px_rgba(167,139,250,0.15)]" : "bg-slate-950/40 text-slate-500 border-white/5"}`}
+                  >
+                    <Brain className={`w-3 h-3 ${highThinkingEnabled ? "animate-pulse" : ""}`} />
+                    THINKING: {highThinkingEnabled ? "HIGH" : "FAST"}
+                  </button>
+                </div>
+
+                {/* Messages List - Scrollable viewport */}
+                <div className="flex-1 min-h-0 overflow-y-auto pr-1 no-scrollbar space-y-4 mb-3">
+                  {aiMessages.map((msg, i) => (
+                    <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                      <span className="text-[7px] font-mono text-slate-500 mb-0.5 tracking-widest uppercase">
+                        {msg.role === "user" ? "EXPLORER" : "AI ENGINE"}
+                      </span>
+                      <div
+                        className={`max-w-[85%] rounded-2xl p-3 text-xs font-mono leading-relaxed whitespace-pre-wrap select-text shadow-sm ${msg.role === "user" ? "bg-gradient-to-br from-[#A78BFA]/15 to-[#8B5CF6]/10 border border-[#A78BFA]/25 text-white" : "bg-white/5 border border-white/5 text-slate-300"}`}
+                      >
+                        {msg.parts[0].text}
+                        
+                        {/* Search grounding citations */}
+                        {msg.role === "model" && msg.groundingChunks && msg.groundingChunks.length > 0 && (
+                          <div className="mt-2 pt-1.5 border-t border-white/5 space-y-1 select-none">
+                            <div className="text-[8px] font-mono text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                              <span>🔍</span> GROUNDED SEARCH SOURCES:
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {msg.groundingChunks.map((chunk, cIdx) => {
+                                const uri = chunk.web?.uri;
+                                const title = chunk.web?.title || uri;
+                                if (!uri) return null;
+                                return (
+                                  <a
+                                    key={cIdx}
+                                    href={uri}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 hover:bg-[#A78BFA]/10 hover:text-[#A78BFA] text-[9px] text-slate-300 transition-all duration-200 border border-white/5 hover:border-[#A78BFA]/30 max-w-[130px] truncate shadow-sm"
+                                    title={title}
+                                  >
+                                    <span className="text-[#A78BFA] font-bold">[{cIdx + 1}]</span>
+                                    <span className="truncate">{title}</span>
+                                  </a>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {aiLoading && (
+                    <div className="flex flex-col items-start animate-pulse">
+                      <span className="text-[8px] font-mono text-[#A78BFA] mb-0.5 tracking-widest uppercase">
+                        THINKING PROCESS ACTIVE
+                      </span>
+                      <div className="bg-purple-500/5 border border-[#A78BFA]/10 rounded-2xl p-3 text-xs font-mono text-[#A78BFA] flex items-center gap-2">
+                        <span className="flex h-1.5 w-1.5 relative">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A78BFA] opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A78BFA]"></span>
+                        </span>
+                        {highThinkingEnabled ? (
+                          <span>Simulating system pathways (high thinking level engaged)…</span>
+                        ) : (
+                          <span>Synthesizing flash response…</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Prompt Scrollable Row (pinned) */}
+                <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 mb-2.5 flex-shrink-0 border-t border-white/5 pt-2">
+                  {[
+                    { label: "🐳 Docker Namespaces", prompt: "Explain how Docker uses Linux namespaces & cgroups to isolate processes." },
+                    { label: "💾 Database Locks", prompt: "What is the difference between Shared and Exclusive locks in Postgres, and how do deadlocks occur?" },
+                    { label: "⚡ CPU Cache", prompt: "Explain CPU cache lines, cache bouncing, and spatial/temporal locality with code examples." },
+                    { label: "📊 Postgres EXPLAIN", prompt: "How do I read a Postgres EXPLAIN ANALYZE query plan? Explain Seq Scan vs Index Scan." }
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSendAiMessage(item.prompt)}
+                      disabled={aiLoading}
+                      className="flex-shrink-0 px-2.5 py-1.5 text-[9px] font-mono rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-[#A78BFA]/20 text-slate-300 hover:text-white transition-all duration-150 disabled:opacity-50 shadow-sm"
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Message Input Box (pinned at bottom) */}
+                <form onSubmit={e => { e.preventDefault(); handleSendAiMessage(); }} className="flex gap-2 flex-shrink-0">
+                  <input
+                    type="text"
+                    value={aiInput}
+                    onChange={e => setAiInput(e.target.value)}
+                    disabled={aiLoading}
+                    placeholder={aiLoading ? "Thinking..." : "Ask your systems oracle..."}
+                    className="flex-1 min-w-0 bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-[#A78BFA]/40 transition-all disabled:opacity-50"
+                  />
+                  <button
+                    type="submit"
+                    disabled={aiLoading || !aiInput.trim()}
+                    className="p-2 rounded-xl bg-gradient-to-br from-[#A78BFA] to-[#8B5CF6] hover:brightness-110 disabled:bg-slate-800 disabled:text-slate-600 text-black font-black flex items-center justify-center transition-all duration-200 shadow-md"
+                  >
+                    <Send className="w-3.5 h-3.5 text-black" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearChat}
+                    title="Clear conversation log"
+                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white transition-all duration-200 shadow-sm"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </form>
+              </div>
+            ) : (
+                <div className="flex-1 min-h-0 overflow-y-auto pr-1 no-scrollbar space-y-4 flex flex-col animate-fade-in">
                   {/* Systems Academy Topic Picker or Lesson Viewer */}
                   {!lessonData && !lessonLoading ? (
                     <div className="space-y-4">
@@ -4414,7 +4415,7 @@ export default function App(){
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-5 max-h-[500px] overflow-y-auto pr-1 no-scrollbar select-text">
+                    <div className="space-y-5 select-text">
                       <div className="flex items-center justify-between border-b border-white/10 pb-2">
                         <h4 className="text-xs font-bold font-mono text-[#A78BFA] uppercase truncate flex-1 pr-2">
                           🎓 {lessonData.title}
@@ -4585,111 +4586,122 @@ export default function App(){
               )}
             </div>
 
-            {/* 3. Settings Control Center (Other Features) */}
-            <div 
-              className="border border-white/10 p-5 space-y-4 shadow-xl rounded-2xl" 
-              style={{ 
-                background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)"
-              }}
-            >
-              <span className="text-[10px] font-mono tracking-[0.12em] font-black text-[#A78BFA] flex items-center gap-1.5 uppercase">
-                <span>⚙️</span> VESSEL SYSTEMS & MODE CONTROLS
-              </span>
+            {/* Collapsible Settings & Footer Area */}
+            <div className="border-t border-white/10 flex-shrink-0 bg-slate-950/40">
+              <button
+                onClick={() => {
+                  setVesselSettingsOpen(!vesselSettingsOpen);
+                  playSweepSound(audioEnabled, !vesselSettingsOpen);
+                }}
+                className="w-full px-4 py-2.5 flex items-center justify-between text-slate-400 hover:text-slate-200 transition-colors font-mono text-[9px] tracking-widest font-black uppercase"
+              >
+                <span className="flex items-center gap-1.5">
+                  <span>⚙️</span> VESSEL SYSTEMS & MODE CONTROLS
+                </span>
+                <span>{vesselSettingsOpen ? "▲ CLOSE" : "▼ OPEN"}</span>
+              </button>
 
-              {/* Ambient Star Speed Slider */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between font-mono text-[10px]">
-                  <span className="text-slate-300 flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 text-yellow-400 animate-spin" style={{ animationDuration: "6s" }} />
-                    AMBIENT UNIVERSE SPEED
-                  </span>
-                  <span className="text-[#A78BFA] font-bold">{starSpeed.toFixed(1)}x</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px] font-mono text-slate-500">0.2x</span>
-                  <input
-                    type="range"
-                    min="0.2"
-                    max="3.0"
-                    step="0.1"
-                    value={starSpeed}
-                    onChange={e => {
-                      const val = parseFloat(e.target.value);
-                      setStarSpeed(val);
-                      localStorage.setItem("rmx_star_speed", String(val));
-                    }}
-                    className="flex-1 accent-[#A78BFA] bg-slate-950/50 rounded-lg h-1"
-                  />
-                  <span className="text-[9px] font-mono text-slate-500">3.0x</span>
-                </div>
-              </div>
+              <AnimatePresence>
+                {vesselSettingsOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden border-t border-white/5 px-4 pb-4 space-y-4 pt-3 bg-slate-950/60"
+                  >
+                    {/* Ambient Star Speed Slider */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between font-mono text-[9px]">
+                        <span className="text-slate-400 flex items-center gap-1.5">
+                          <Star className="w-3 h-3 text-yellow-400 animate-spin" style={{ animationDuration: "6s" }} />
+                          AMBIENT UNIVERSE SPEED
+                        </span>
+                        <span className="text-[#A78BFA] font-bold">{starSpeed.toFixed(1)}x</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[8px] font-mono text-slate-500">0.2x</span>
+                        <input
+                          type="range"
+                          min="0.2"
+                          max="3.0"
+                          step="0.1"
+                          value={starSpeed}
+                          onChange={e => {
+                            const val = parseFloat(e.target.value);
+                            setStarSpeed(val);
+                            localStorage.setItem("rmx_star_speed", String(val));
+                          }}
+                          className="flex-1 accent-[#A78BFA] bg-slate-900 rounded-lg h-1"
+                        />
+                        <span className="text-[8px] font-mono text-slate-500">3.0x</span>
+                      </div>
+                    </div>
 
-              {/* Audio feedback sound toggle */}
-              <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                <div className="flex items-center gap-2 font-mono">
-                  {audioEnabled ? (
-                    <Volume2 className="w-4 h-4 text-[#10F5A0]" />
-                  ) : (
-                    <VolumeX className="w-4 h-4 text-slate-500" />
-                  )}
-                  <div>
-                    <div className="text-[10px] font-bold text-slate-300">SYNTH SOUND EFFECTS</div>
-                    <div className="text-[8px] text-slate-500 font-bold">Dual-tone thrum alerts when checking items</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    setAudioEnabled(prev => {
-                      const next = !prev;
-                      localStorage.setItem("rmx_audio_enabled", String(next));
-                      playSuccessBeep(next);
-                      return next;
-                    });
-                  }}
-                  className={`w-10 h-5 rounded-full p-0.5 transition-all duration-300 flex items-center ${audioEnabled ? "bg-[#10F5A0] justify-end" : "bg-slate-800 justify-start"}`}
-                >
-                  <span className="w-4 h-4 rounded-full bg-slate-900 shadow-md" />
-                </button>
-              </div>
+                    {/* Audio feedback sound toggle */}
+                    <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                      <div className="flex items-center gap-2 font-mono">
+                        {audioEnabled ? (
+                          <Volume2 className="w-3.5 h-3.5 text-[#10F5A0]" />
+                        ) : (
+                          <VolumeX className="w-3.5 h-3.5 text-slate-500" />
+                        )}
+                        <div>
+                          <div className="text-[9px] font-bold text-slate-300">SYNTH SOUND EFFECTS</div>
+                          <div className="text-[7.5px] text-slate-500 font-bold">Dual-tone thrum alerts when checking items</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setAudioEnabled(prev => {
+                            const next = !prev;
+                            localStorage.setItem("rmx_audio_enabled", String(next));
+                            playSuccessBeep(next);
+                            return next;
+                          });
+                        }}
+                        className={`w-8 h-4.5 rounded-full p-0.5 transition-all duration-300 flex items-center ${audioEnabled ? "bg-[#10F5A0] justify-end" : "bg-slate-800 justify-start"}`}
+                      >
+                        <span className="w-3.5 h-3.5 rounded-full bg-slate-900 shadow-md" />
+                      </button>
+                    </div>
 
-              {/* Safety Clear Logs Progress Reset Action */}
-              <div className="flex items-center justify-between border-t border-white/5 pt-3">
-                <div className="font-mono">
-                  <div className="text-[10px] font-bold text-slate-300">SAFETY DEEP CLEAN</div>
-                  <div className="text-[8px] text-slate-500">Wipes local completed roadmap metrics</div>
-                </div>
-                <button
-                  onClick={() => {
-                    if (window.confirm("ARE YOU ABSOLUTELY SURE? This will permanently wipe your local completed roadmap milestones from this machine.")) {
-                      localStorage.removeItem("rmx_done");
-                      localStorage.removeItem("rmx_bkm");
-                      localStorage.removeItem("rmx_weekly_habits");
-                      localStorage.removeItem("rmx_elite_done");
-                      setDone({});
-                      setBkm({});
-                      setWeeklyHabits({});
-                      setEliteDone({});
-                      playSweepSound(audioEnabled, false);
-                      setPortalOpen(false);
-                      window.location.reload();
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded-xl border border-red-500/15 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/35 text-red-400 font-mono text-[9px] tracking-widest uppercase font-black transition-all duration-200"
-                >
-                  WIPE CHANNELS
-                </button>
+                    {/* Safety Clear Logs Progress Reset Action */}
+                    <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                      <div className="font-mono">
+                        <div className="text-[9px] font-bold text-slate-300">SAFETY DEEP CLEAN</div>
+                        <div className="text-[7.5px] text-slate-500">Wipes local completed roadmap metrics</div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (window.confirm("ARE YOU ABSOLUTELY SURE? This will permanently wipe your local completed roadmap milestones from this machine.")) {
+                            localStorage.removeItem("rmx_done");
+                            localStorage.removeItem("rmx_bkm");
+                            localStorage.removeItem("rmx_weekly_habits");
+                            localStorage.removeItem("rmx_elite_done");
+                            setDone({});
+                            setBkm({});
+                            setWeeklyHabits({});
+                            setEliteDone({});
+                            playSweepSound(audioEnabled, false);
+                            setPortalOpen(false);
+                            window.location.reload();
+                          }
+                        }}
+                        className="px-2.5 py-1 rounded-lg border border-red-500/15 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/35 text-red-400 font-mono text-[8px] tracking-widest uppercase font-black transition-all duration-200"
+                      >
+                        WIPE CHANNELS
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Footer status credits bar */}
+              <div className="p-2 border-t border-white/10 text-center font-mono text-[8px] text-slate-600 bg-black/40">
+                FLOW_16_SYSTEMS_CORE // STATUS: COGNITIVE_ACTIVE
               </div>
             </div>
-
-          </div>
-
-          {/* Footer status credits bar */}
-          <div className="p-3 border-t border-white/10 text-center font-mono text-[8px] text-slate-500" style={{ background: "rgba(10, 22, 40, 0.4)" }}>
-            FLOW_16_SYSTEMS_CORE // STATUS: COGNITIVE_ACTIVE
-          </div>
-        </motion.div>
+          </motion.div>
       </>
     )}
   </AnimatePresence>
