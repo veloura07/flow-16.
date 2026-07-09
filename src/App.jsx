@@ -3,7 +3,8 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { auth, db, googleProvider, signInWithPopup, signOut, onAuthStateChanged, doc, getDoc, setDoc, serverTimestamp, OperationType, handleFirestoreError } from "./firebase";
 import { motion, AnimatePresence } from "motion/react";
 import { 
-  Sparkles, Settings, LogOut, X, ChevronRight, Sliders, User, Send, Trash2, Volume2, VolumeX, Brain, Zap, RefreshCw, Star
+  Sparkles, Settings, LogOut, X, ChevronRight, Sliders, User, Send, Trash2, Volume2, VolumeX, Brain, Zap, RefreshCw, Star,
+  Terminal, Cpu, Database, Layers, Play, Activity, Network, ArrowRight, Sun, Moon
 } from "lucide-react";
 
 const playSuccessBeep = (enabled) => {
@@ -56,6 +57,14 @@ const playSweepSound = (enabled, isUp = true) => {
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@1,800;1,900&display=swap');
+@keyframes swayTail {
+  0% { transform: rotate(-8deg); }
+  100% { transform: rotate(12deg); }
+}
+@keyframes breatheHead {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(1.2px) rotate(0.5deg); }
+}
 :root {
   --nebula-purple: rgba(139, 92, 246, 0.16);
   --nebula-teal: rgba(20, 184, 166, 0.14);
@@ -1558,6 +1567,695 @@ function Resources({monthNum,color}){
   );
 }
 
+function CyberCat({ eyeOffset, expression = "idle" }) {
+  // Determine eye color and glow color based on current expression state
+  let eyeColor = "#22D3EE"; // idle: cyan
+  if (expression === "thinking") {
+    eyeColor = "#FBBF24"; // thinking: amber/gold
+  } else if (expression === "happy") {
+    eyeColor = "#10F5A0"; // happy: emerald
+  } else if (expression === "typing") {
+    eyeColor = "#EC4899"; // typing: magenta/pink
+  }
+
+  const isHappy = expression === "happy";
+  const isThinking = expression === "thinking";
+  const isTyping = expression === "typing";
+
+  // Assign pupil style/animation based on expression state
+  let pupilStyle = {};
+  if (isThinking) {
+    pupilStyle = { animation: "thinkingPupil 1.5s linear infinite" };
+  } else if (isTyping) {
+    pupilStyle = { animation: "pupilRead 0.8s ease-in-out infinite" };
+  } else {
+    pupilStyle = { transform: `translate(${eyeOffset.x}px, ${eyeOffset.y}px)` };
+  }
+
+  return (
+    <div style={{ position: "relative" }}>
+      <style>{`
+        @keyframes catHop {
+          0%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-10px) scaleY(1.04); }
+          50% { transform: translateY(-12px) scaleY(0.98); }
+          75% { transform: translateY(-3px) scaleY(0.95); }
+        }
+        @keyframes thinkingPupil {
+          0% { transform: translate(0, 0); }
+          25% { transform: translate(2.2px, -1px); }
+          50% { transform: translate(0, 2.2px); }
+          75% { transform: translate(-2.2px, -1px); }
+          100% { transform: translate(0, 0); }
+        }
+        @keyframes pupilRead {
+          0%, 100% { transform: translate(-1.8px, 2px); }
+          50% { transform: translate(1.8px, 2px); }
+        }
+      `}</style>
+      <svg 
+        width="44" 
+        height="44" 
+        viewBox="0 0 60 60" 
+        style={{ 
+          overflow: "visible",
+          animation: isHappy ? "catHop 0.6s cubic-bezier(0.25, 1, 0.5, 1) infinite" : "none"
+        }} 
+        className="drop-shadow-[0_0_8px_rgba(34,211,238,0.2)]"
+      >
+        <defs>
+          <filter id="cat-cyber-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.2" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+
+        {/* Swaying Tail */}
+        <path 
+          d="M 15 50 Q 5 45 8 32 Q 10 25 5 20" 
+          fill="none" 
+          stroke="#8B5A2B" 
+          strokeWidth="4.5" 
+          strokeLinecap="round"
+          style={{
+            transformOrigin: "15px 50px",
+            animation: "swayTail 2.8s ease-in-out infinite alternate"
+          }}
+        />
+        {/* Cyber highlight on tail tip */}
+        <circle
+          cx="5"
+          cy="20"
+          r="3.2"
+          fill={eyeColor}
+          filter="url(#cat-cyber-glow)"
+          style={{
+            transformOrigin: "15px 50px",
+            animation: "swayTail 2.8s ease-in-out infinite alternate",
+            transition: "fill 0.25s ease"
+          }}
+        />
+
+        {/* Seated Body */}
+        <path d="M 15 52 Q 22 35 30 35 Q 38 35 45 52 Z" fill="#8B5A2B" />
+        {/* Back paws */}
+        <ellipse cx="18" cy="52" rx="4" ry="2.5" fill="#704214" />
+        <ellipse cx="42" cy="52" rx="4" ry="2.5" fill="#704214" />
+        {/* Front paws */}
+        <ellipse cx="26" cy="53" rx="3.5" ry="2" fill="#5C3A21" />
+        <ellipse cx="34" cy="53" rx="3.5" ry="2" fill="#5C3A21" />
+
+        {/* Head Group (Slight breathing translation) */}
+        <g style={{ animation: "breatheHead 3.5s ease-in-out infinite alternate", transformOrigin: "30px 30px" }}>
+          {/* Left Ear */}
+          <polygon points="12,18 21,4 23,18" fill="#704214" />
+          <polygon points="14,16 19,7 20,16" fill={eyeColor} filter="url(#cat-cyber-glow)" opacity="0.9" style={{ transition: "fill 0.25s ease" }} />
+          
+          {/* Right Ear */}
+          <polygon points="48,18 39,4 37,18" fill="#704214" />
+          <polygon points="46,16 41,7 40,16" fill={eyeColor} filter="url(#cat-cyber-glow)" opacity="0.9" style={{ transition: "fill 0.25s ease" }} />
+
+          {/* Head Circle */}
+          <circle cx="30" cy="22" r="14" fill="#8B5A2B" />
+          
+          {/* Cyber temple plate lines */}
+          <path d="M 18 20 L 22 20" stroke={eyeColor} strokeWidth="1" filter="url(#cat-cyber-glow)" style={{ transition: "stroke 0.25s ease" }} />
+          <path d="M 42 20 L 38 20" stroke={eyeColor} strokeWidth="1" filter="url(#cat-cyber-glow)" style={{ transition: "stroke 0.25s ease" }} />
+
+          {/* Left Eye Socket */}
+          <circle cx="23" cy="21" r="5" fill="#1E293B" stroke="#334155" strokeWidth="1" />
+          {/* Left Pupil (Moves!) */}
+          <g style={pupilStyle}>
+            {isHappy ? (
+              <path d="M 21 22.5 Q 23 20 25 22.5" fill="none" stroke={eyeColor} strokeWidth="2.2" strokeLinecap="round" filter="url(#cat-cyber-glow)" />
+            ) : (
+              <>
+                <circle cx="23" cy="21" r="2.8" fill={eyeColor} filter="url(#cat-cyber-glow)" style={{ transition: "fill 0.25s ease" }} />
+                <circle cx="21.8" cy="19.8" r="0.8" fill="#FFFFFF" />
+              </>
+            )}
+          </g>
+
+          {/* Right Eye Socket */}
+          <circle cx="37" cy="21" r="5" fill="#1E293B" stroke="#334155" strokeWidth="1" />
+          {/* Right Pupil (Moves!) */}
+          <g style={pupilStyle}>
+            {isHappy ? (
+              <path d="M 35 22.5 Q 37 20 39 22.5" fill="none" stroke={eyeColor} strokeWidth="2.2" strokeLinecap="round" filter="url(#cat-cyber-glow)" />
+            ) : (
+              <>
+                <circle cx="37" cy="21" r="2.8" fill={eyeColor} filter="url(#cat-cyber-glow)" style={{ transition: "fill 0.25s ease" }} />
+                <circle cx="35.8" cy="19.8" r="0.8" fill="#FFFFFF" />
+              </>
+            )}
+          </g>
+
+          {/* Nose & Mouth */}
+          <polygon points="29,25 31,25 30,26.5" fill="#5C3A21" />
+          <path d="M 28 27 Q 30 28.5 30 27 Q 30 28.5 32 27" fill="none" stroke="#5C3A21" strokeWidth="1" />
+
+          {/* Metallic Whiskers */}
+          <path d="M 16 25 L 7 24" stroke="#475569" strokeWidth="1.2" />
+          <path d="M 16 27 L 5 28" stroke="#475569" strokeWidth="1.2" />
+          <path d="M 44 25 L 53 24" stroke="#475569" strokeWidth="1.2" />
+          <path d="M 44 27 L 55 28" stroke="#475569" strokeWidth="1.2" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function SidebarChatbot({ 
+  aiMessages, 
+  aiLoading, 
+  handleSendAiMessage, 
+  highThinkingEnabled, 
+  setHighThinkingEnabled,
+  audioEnabled
+}) {
+  const [leftInput, setLeftInput] = useState("");
+  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 });
+  const [chatGlassMode, setChatGlassMode] = useState(() => {
+    return localStorage.getItem("rmx_chat_glass_mode") || "dark";
+  });
+  const [catExpression, setCatExpression] = useState("idle");
+  const catRef = useRef(null);
+  const scrollRef = useRef(null);
+  const prevMsgCount = useRef(aiMessages.length);
+
+  // Mouse tracking to feed cursor angle to cyber cat eyes
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!catRef.current) return;
+      const rect = catRef.current.getBoundingClientRect();
+      const catX = rect.left + rect.width / 2;
+      const catY = rect.top + rect.height / 2;
+      const dx = e.clientX - catX;
+      const dy = e.clientY - catY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      const maxLimit = 3.5;
+      if (distance === 0) {
+        setEyeOffset({ x: 0, y: 0 });
+      } else {
+        const scale = Math.min(maxLimit, distance / 35);
+        const angle = Math.atan2(dy, dx);
+        setEyeOffset({
+          x: Math.cos(angle) * scale,
+          y: Math.sin(angle) * scale
+        });
+      }
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  // Track message updates to trigger "happy" cat expression
+  useEffect(() => {
+    if (aiMessages.length > prevMsgCount.current) {
+      setCatExpression("happy");
+      const timer = setTimeout(() => {
+        setCatExpression("idle");
+      }, 3000);
+      prevMsgCount.current = aiMessages.length;
+      return () => clearTimeout(timer);
+    }
+    prevMsgCount.current = aiMessages.length;
+  }, [aiMessages.length]);
+
+  // Keep scroll focused on newest system trace
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [aiMessages, aiLoading]);
+
+  // Resolve current active expression
+  let currentExpression = catExpression;
+  if (aiLoading) {
+    currentExpression = "thinking";
+  } else if (leftInput.trim().length > 0 && currentExpression !== "happy") {
+    currentExpression = "typing";
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!leftInput.trim() || aiLoading) return;
+    handleSendAiMessage(leftInput);
+    setLeftInput("");
+  };
+
+  const handleThemeToggle = () => {
+    const nextMode = chatGlassMode === "dark" ? "light" : "dark";
+    setChatGlassMode(nextMode);
+    localStorage.setItem("rmx_chat_glass_mode", nextMode);
+    try { playSuccessBeep(audioEnabled); } catch (e) {}
+  };
+
+  // Glassmorphic Theme configuration matrices
+  const isLight = chatGlassMode === "light";
+  const bgStyle = isLight 
+    ? "rgba(255, 255, 255, 0.72)" 
+    : "rgba(10, 22, 40, 0.45)";
+  const borderStyle = isLight 
+    ? "1.5px solid rgba(15, 23, 42, 0.12)" 
+    : "1.5px solid rgba(255, 255, 255, 0.08)";
+  const shadowStyle = isLight
+    ? "0 10px 30px -5px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6)"
+    : "0 10px 30px -5px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)";
+  const headerTextColor = isLight ? "text-slate-900" : "text-white";
+  const subTextColor = isLight ? "text-slate-500 font-medium" : "text-slate-400";
+  const primaryAccentColor = isLight ? "#7C3AED" : "#22D3EE";
+  const userBubbleStyle = isLight
+    ? "bg-purple-600/10 border border-purple-600/20 text-purple-950 font-medium"
+    : "bg-[#A78BFA]/15 border border-[#A78BFA]/25 text-white";
+  const copilotBubbleStyle = isLight
+    ? "bg-slate-200/65 border border-slate-300/40 text-slate-800"
+    : "bg-white/5 border border-white/5 text-slate-300";
+  const inputBgClass = isLight
+    ? "bg-white/90 border-slate-300/70 text-slate-900 placeholder:text-slate-400 focus:border-purple-500/60"
+    : "bg-slate-950/60 border-white/5 text-white placeholder:text-slate-600 focus:border-[#A78BFA]/30";
+  const footerBtnClass = isLight
+    ? "bg-slate-100 hover:bg-slate-200 border-slate-300/60 text-slate-600"
+    : "border-white/5 bg-transparent text-slate-500";
+
+  return (
+    <div style={{
+      background: bgStyle,
+      border: borderStyle,
+      borderRadius: "18px",
+      padding: "16px",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      boxShadow: shadowStyle,
+      transition: "background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease"
+    }} className="flex flex-col relative overflow-hidden">
+      
+      {/* Decorative background glow node */}
+      <div 
+        className="absolute -top-12 -right-12 w-24 h-24 rounded-full blur-2xl pointer-events-none transition-colors duration-500" 
+        style={{ backgroundColor: isLight ? "rgba(124, 58, 237, 0.08)" : "rgba(167, 139, 250, 0.08)" }}
+      />
+
+      {/* Header controls layout */}
+      <div className="flex items-center justify-between mb-3 border-b border-black/5 dark:border-white/5 pb-2.5">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-1.5">
+            <span 
+              className="w-1.5 h-1.5 rounded-full animate-pulse transition-colors" 
+              style={{ backgroundColor: primaryAccentColor }}
+            />
+            <span style={{ fontSize: "10px", color: primaryAccentColor, fontWeight: "800", letterSpacing: "1.5px", textTransform: "uppercase", transition: "color 0.3s" }}>
+              SYSTEMS AI COPILOT
+            </span>
+          </div>
+          <span style={{ fontSize: "11px", marginTop: "1px" }} className={subTextColor}>
+            Real-time Assistant
+          </span>
+        </div>
+
+        {/* Theme and Cat row */}
+        <div className="flex items-center gap-2.5">
+          {/* Glass Theme Mode Toggle Button */}
+          <button
+            type="button"
+            onClick={handleThemeToggle}
+            className={`p-1.5 rounded-xl border transition-all duration-300 flex items-center justify-center shadow-sm ${
+              isLight
+                ? "bg-white/80 hover:bg-white border-slate-200 text-purple-600"
+                : "bg-white/5 hover:bg-white/10 border-white/10 text-yellow-400"
+            }`}
+            title={isLight ? "Switch to Dark glassmorphism mode" : "Switch to Light glassmorphism mode"}
+          >
+            {isLight ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+          </button>
+
+          {/* Eye tracking Cat element */}
+          <div ref={catRef} title={`Cyber-Cat: ${currentExpression.toUpperCase()}`} className="cursor-help transform hover:scale-105 transition-transform duration-200">
+            <CyberCat eyeOffset={eyeOffset} expression={currentExpression} />
+          </div>
+        </div>
+      </div>
+
+      {/* Scrollable message container */}
+      <div 
+        ref={scrollRef}
+        style={{
+          height: "220px",
+          overflowY: "auto",
+          fontSize: "10.5px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          paddingRight: "4px"
+        }}
+        className="no-scrollbar mb-3"
+      >
+        {aiMessages.map((msg, i) => (
+          <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+            <span className="text-[7px] font-mono text-slate-500 mb-0.5 tracking-wider uppercase">
+              {msg.role === "user" ? "YOU" : "COPILOT"}
+            </span>
+            <div
+              className={`max-w-[90%] rounded-xl p-2.5 font-mono leading-relaxed select-text shadow-sm transition-colors ${
+                msg.role === "user" ? userBubbleStyle : copilotBubbleStyle
+              }`}
+              style={{ wordBreak: "break-word" }}
+            >
+              {msg.parts[0].text}
+            </div>
+          </div>
+        ))}
+        {aiLoading && (
+          <div className="flex flex-col items-start animate-pulse">
+            <span className="text-[7px] font-mono text-[#A78BFA] mb-0.5 tracking-wider uppercase">
+              SYNTHESIZING...
+            </span>
+            <div className={`rounded-xl p-2 text-[10px] font-mono flex items-center gap-1.5 border ${isLight ? "bg-purple-100/60 text-purple-700 border-purple-200" : "bg-[#A78BFA]/5 border-[#A78BFA]/10 text-[#A78BFA]"}`}>
+              <span className="flex h-1 w-1 relative">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isLight ? "bg-purple-600" : "bg-[#A78BFA]"}`}></span>
+                <span className={`relative inline-flex rounded-full h-1 w-1 ${isLight ? "bg-purple-600" : "bg-[#A78BFA]"}`}></span>
+              </span>
+              <span>Thinking...</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Sub-bar buttons */}
+      <div className="flex items-center justify-between mb-2.5 text-[8px] font-mono text-slate-400">
+        <button
+          type="button"
+          onClick={() => {
+            setHighThinkingEnabled(!highThinkingEnabled);
+            try { playSweepSound(audioEnabled, !highThinkingEnabled); } catch (e) {}
+          }}
+          className={`px-2 py-0.5 rounded border transition-all ${
+            highThinkingEnabled 
+              ? "bg-[#A78BFA]/10 border-[#A78BFA]/25 text-[#A78BFA] font-bold" 
+              : "border-black/5 dark:border-white/5 bg-transparent text-slate-500"
+          }`}
+        >
+          🧠 {highThinkingEnabled ? "REASONING ACTIVE" : "FAST MODE"}
+        </button>
+        
+        <button
+          type="button"
+          onClick={() => {
+            if(confirm("Clear chat conversation?")) {
+              const resetMsgs = [
+                {
+                  role: "model",
+                  parts: [{ text: "Chat history cleared. How can I assist you with low-level systems engineering or database optimization today?" }]
+                }
+              ];
+              setAiMessages(resetMsgs);
+              localStorage.setItem("rmx_ai_messages", JSON.stringify(resetMsgs));
+            }
+          }}
+          className="hover:text-red-400 font-bold transition-colors"
+        >
+          🗑 CLEAR HISTORY
+        </button>
+      </div>
+
+      {/* Message submit form */}
+      <form onSubmit={handleSubmit} className="flex gap-1.5">
+        <input
+          type="text"
+          value={leftInput}
+          onChange={e => setLeftInput(e.target.value)}
+          disabled={aiLoading}
+          placeholder="Ask systems copilot..."
+          className={`flex-1 border rounded-xl px-2.5 py-1.5 text-[11px] font-mono transition-all disabled:opacity-50 ${inputBgClass}`}
+        />
+        <button
+          type="submit"
+          disabled={!leftInput.trim() || aiLoading}
+          className="p-2 rounded-xl bg-gradient-to-br from-[#A78BFA] to-[#8B5CF6] hover:brightness-110 disabled:opacity-40 text-black font-black flex items-center justify-center transition-all duration-200 shadow-md"
+        >
+          <Send size={11} className="text-black stroke-[3px]" />
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function SidebarAcademy({
+  customAcademyTopic,
+  setCustomAcademyTopic,
+  lessonData,
+  setLessonData,
+  lessonLoading,
+  handleGenerateLesson,
+  selectedAnswers,
+  setSelectedAnswers,
+  quizSubmitted,
+  setQuizSubmitted,
+  editableNotes,
+  setEditableNotes,
+  notesSavedStatus,
+  handleSaveLessonNotes,
+  audioEnabled
+}) {
+  return (
+    <div style={{
+      background: "rgba(10, 22, 40, 0.45)",
+      border: "1.5px solid rgba(255, 255, 255, 0.08)",
+      borderRadius: "18px",
+      padding: "16px",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      boxShadow: "0 10px 30px -5px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)",
+    }} className="flex flex-col relative overflow-hidden">
+      
+      {/* Decorative background glow node */}
+      <div 
+        className="absolute -top-12 -right-12 w-24 h-24 rounded-full blur-2xl pointer-events-none" 
+        style={{ backgroundColor: "rgba(167, 139, 250, 0.06)" }}
+      />
+
+      <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2.5">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+            <span style={{ fontSize: "10px", color: "#A78BFA", fontWeight: "800", letterSpacing: "1.5px", textTransform: "uppercase" }}>
+              SYSTEMS ACADEMY
+            </span>
+          </div>
+          <span style={{ fontSize: "11px", marginTop: "1px" }} className="text-slate-400 font-medium">
+            Interactive Classroom
+          </span>
+        </div>
+        <span className="text-xs">🎓</span>
+      </div>
+
+      {/* Systems Academy Topic Picker or Lesson Viewer */}
+      {!lessonData && !lessonLoading ? (
+        <div className="space-y-4">
+          <p className="text-[10.5px] font-mono text-slate-400 leading-relaxed bg-white/5 p-3 rounded-xl border border-white/5 shadow-inner">
+            Select a high-performance system curriculum or define your own. The oracle will generate deep-dive lessons, interactive checkpoint quizzes, and saveable cheat sheets!
+          </p>
+
+          <div className="space-y-2">
+            <span className="text-[8.5px] font-mono font-black tracking-[0.15em] text-[#A78BFA]/85 uppercase">CURRICULUM PRESETS:</span>
+            <div className="grid grid-cols-1 gap-1.5">
+              {[
+                { label: "🐳 Docker Isolation & namespaces", topic: "Docker Namespaces and cgroups Process Isolation" },
+                { label: "💾 Postgres Shared & Exclusive Locks", topic: "PostgreSQL Shared and Exclusive Locks, Row-Level locks, and Deadlocks" },
+                { label: "⚡ CPU Caches & Spatial Locality", topic: "CPU Cache Lines, Spatial & Temporal Locality, Cache Bouncing" },
+                { label: "📊 Analyzing Postgres EXPLAIN Plans", topic: "Analyzing Postgres Query Plans with EXPLAIN ANALYZE" },
+                { label: "🧱 Virtual Memory & OS mmap allocation", topic: "Operating System Page Tables, Virtual Memory, and mmap memory allocation" }
+              ].map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleGenerateLesson(item.topic)}
+                  className="w-full text-left p-2.5 rounded-xl border border-white/5 bg-white/3 hover:bg-[#A78BFA]/10 hover:border-[#A78BFA]/25 text-[10.5px] font-mono text-slate-300 hover:text-white transition-all duration-200 shadow-sm"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-3 border-t border-white/5">
+            <span className="text-[8.5px] font-mono font-black tracking-[0.15em] text-[#A78BFA]/85 uppercase">DEFINE CUSTOM SYLLABUS:</span>
+            <div className="flex gap-1.5">
+              <input
+                type="text"
+                value={customAcademyTopic}
+                onChange={e => setCustomAcademyTopic(e.target.value)}
+                placeholder="e.g. TCP Slow Start, Rust lifetimes..."
+                className="flex-1 min-w-0 bg-slate-950/40 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-[#A78BFA]/40 transition-all"
+              />
+              <button
+                onClick={() => handleGenerateLesson()}
+                disabled={!customAcademyTopic.trim()}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#A78BFA] to-[#8B5CF6] hover:brightness-110 disabled:bg-slate-800 disabled:text-slate-600 text-black font-black font-mono text-[11px] transition-all duration-200 shadow-md"
+              >
+                STUDY
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : lessonLoading ? (
+        <div className="py-8 flex flex-col items-center justify-center space-y-3 font-mono">
+          <RefreshCw className="w-6 h-6 text-[#A78BFA] animate-spin" />
+          <div className="text-center text-[10px] text-[#A78BFA] animate-pulse uppercase tracking-wider font-black">
+            COMPILING LESSON...
+          </div>
+          <div className="text-[8.5px] text-slate-500 text-center max-w-xs leading-relaxed">
+            The reasoning engine is generating system-level documentation, checkpoint quizzes, and pristine study notes.
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4 select-text">
+          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+            <h4 className="text-[10.5px] font-bold font-mono text-[#A78BFA] uppercase truncate flex-1 pr-2" title={lessonData.title}>
+              🎓 {lessonData.title}
+            </h4>
+            <button
+              onClick={() => setLessonData(null)}
+              className="px-2 py-1 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#A78BFA]/30 text-slate-300 hover:text-white font-mono text-[8.5px] tracking-wider transition-all duration-200 shadow-sm"
+            >
+              RESET
+            </button>
+          </div>
+
+          {/* Section 1: Lecture Guide */}
+          <div className="rounded-xl border border-white/5 p-3.5 space-y-2 bg-slate-950/20 max-h-[220px] overflow-y-auto no-scrollbar">
+            <div className="text-[9px] font-mono font-black text-[#A78BFA] tracking-[0.12em] uppercase flex items-center gap-1">
+              <span>📖</span> SECTION 1: LECTURE GUIDE
+            </div>
+            <div className="text-[10.5px] font-sans text-slate-300 leading-relaxed">
+              <Md text={lessonData.lessonContent} color="#A78BFA" />
+            </div>
+          </div>
+
+          {/* Section 2: Checkpoint Quiz */}
+          <div className="rounded-xl border border-white/5 p-3.5 space-y-3 bg-slate-950/20 max-h-[220px] overflow-y-auto no-scrollbar">
+            <div className="text-[9px] font-mono font-black text-[#A78BFA] tracking-[0.12em] uppercase flex items-center gap-1">
+              <span>📝</span> SECTION 2: CHECKPOINT QUIZ
+            </div>
+            {lessonData.quizQuestions && lessonData.quizQuestions.map((q, qIdx) => {
+              const selectedOpt = selectedAnswers[qIdx];
+              return (
+                <div key={qIdx} className="space-y-2 border-t border-white/5 pt-3 first:border-0 first:pt-0">
+                  <div className="text-[10px] font-mono font-semibold text-slate-200 leading-normal">
+                    Q{qIdx + 1}: {q.question}
+                  </div>
+                  <div className="grid grid-cols-1 gap-1.5">
+                    {q.options.map((opt, optIdx) => {
+                      let btnStyle = "border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:border-[#A78BFA]/20";
+                      if (quizSubmitted) {
+                        if (optIdx === q.correctIndex) {
+                          btnStyle = "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 font-bold";
+                        } else if (optIdx === selectedOpt) {
+                          btnStyle = "border-red-500/50 bg-red-500/10 text-red-400";
+                        } else {
+                          btnStyle = "border-white/5 bg-transparent text-slate-500 opacity-60";
+                        }
+                      } else if (selectedOpt === optIdx) {
+                        btnStyle = "border-[#A78BFA] bg-[#A78BFA]/10 text-white font-bold";
+                      }
+                      return (
+                        <button
+                          key={optIdx}
+                          disabled={quizSubmitted}
+                          onClick={() => {
+                            setSelectedAnswers(prev => ({ ...prev, [qIdx]: optIdx }));
+                            playSuccessBeep(audioEnabled);
+                          }}
+                          className={`w-full text-left p-2.5 rounded-xl border text-[9.5px] font-mono transition-all duration-200 ${btnStyle}`}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {quizSubmitted && (
+                    <div className="text-[8.5px] font-mono text-slate-400 bg-slate-950/40 border border-white/5 p-2.5 rounded-xl leading-relaxed mt-1">
+                      <span className="font-bold block mb-1 text-slate-300">
+                        {selectedOpt === q.correctIndex ? "✅ Correct!" : "❌ Incorrect."}
+                      </span>
+                      {q.explanation}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            
+            {!quizSubmitted ? (
+              <button
+                onClick={() => {
+                  setQuizSubmitted(true);
+                  playSuccessBeep(audioEnabled);
+                }}
+                disabled={Object.keys(selectedAnswers).length < (lessonData.quizQuestions?.length || 3)}
+                className="w-full py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 disabled:opacity-40 text-black font-black font-mono text-[10px] transition-all duration-200 shadow-md"
+              >
+                SUBMIT ANSWERS
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setQuizSubmitted(false);
+                  setSelectedAnswers({});
+                }}
+                className="w-full py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-mono text-[10px] transition-all duration-200 shadow-sm"
+              >
+                RETRY QUIZ
+              </button>
+            )}
+          </div>
+
+          {/* Section 3: Study Notes */}
+          <div className="rounded-xl border border-white/5 p-3.5 space-y-3 bg-slate-950/20">
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] font-mono font-black text-[#A78BFA] tracking-[0.12em] uppercase flex items-center gap-1">
+                <span>📋</span> SECTION 3: NOTES SUMMARY
+              </span>
+            </div>
+            <textarea
+              value={editableNotes}
+              onChange={e => setEditableNotes(e.target.value)}
+              rows={4}
+              className="w-full bg-slate-950/40 border border-white/10 rounded-xl p-2.5 text-[9.5px] font-mono text-slate-200 focus:outline-none focus:border-[#A78BFA]/40 resize-y leading-relaxed shadow-inner"
+            />
+            <div className="flex gap-1.5">
+              <button
+                onClick={handleSaveLessonNotes}
+                className="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl bg-gradient-to-r from-[#A78BFA] to-[#8B5CF6] hover:brightness-110 text-black text-[10px] font-mono font-black transition-all duration-200 shadow-md"
+              >
+                <span>💾</span> {notesSavedStatus === "saved" ? "SAVED!" : notesSavedStatus === "saving" ? "SAVING..." : "SAVE CHEATS"}
+              </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(editableNotes);
+                  playSuccessBeep(audioEnabled);
+                }}
+                className="px-3 py-2 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 text-slate-300 font-mono text-[9.5px] transition-all duration-200 shadow-sm"
+              >
+                COPY
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setLessonData(null);
+              playSuccessBeep(audioEnabled);
+            }}
+            className="w-full py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-mono text-[9px] tracking-widest uppercase transition-all duration-200 shadow-sm"
+          >
+            ⬅️ BACK TO ACADEMY
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Pomodoro(){
   const [left,setLeft]=useState(25*60);
   const [running,setRunning]=useState(false);
@@ -2255,7 +2953,1256 @@ function ModuleFocusedReader({
   );
 }
 
-export default function App(){
+// ============================================================================
+// SYSTEMS LAB: INTERACTIVE CYBERNETIC COGNITIVE WORKSHOP
+// ============================================================================
+
+function SystemsLab({ audioEnabled }) {
+  const [labTab, setLabTab] = useState("terminal");
+
+  // Global styled theme pointers (accessible directly)
+  const colors = {
+    cyan: "#22D3EE",
+    magenta: "#FF2D78",
+    purple: "#7C3AED",
+    green: "#10F5A0",
+    gold: "#FBBF24"
+  };
+
+  // 1. Terminal State
+  const [terminalInput, setTerminalInput] = useState("");
+  const [terminalHistory, setTerminalHistory] = useState([
+    { type: "sys", text: "FLOW_16 COGNITIVE SYSTEMS MAINFRAME // TERMINAL ACTIVE" },
+    { type: "sys", text: "COGNITIVE PORT INTEGRATED // STATUS: GREEN" },
+    { type: "sys", text: "Type 'help' or click a macro command to analyze system diagnostics, memory heaps, and neural maps." }
+  ]);
+  const terminalBottomRef = useRef(null);
+
+  useEffect(() => {
+    if (terminalBottomRef.current) {
+      terminalBottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [terminalHistory]);
+
+  // 2. Memory Allocator State
+  const [memoryBlocks, setMemoryBlocks] = useState(() => {
+    const arr = Array(32).fill(0); // 0 = Free, 1 = Allocated, 2 = Leaked
+    arr[0] = 1; arr[1] = 1; arr[4] = 1; arr[8] = 2; arr[12] = 1; arr[13] = 1; arr[20] = 2;
+    return arr;
+  });
+  const [allocSize, setAllocSize] = useState(2);
+  const [allocAlgo, setAllocAlgo] = useState("first-fit");
+  const [gcSweeping, setGcSweeping] = useState(false);
+
+  // 3. Neural Net Attention Map Hover State
+  const [hoveredRow, setHoveredRow] = useState(null);
+  const [hoveredCol, setHoveredCol] = useState(null);
+  const [attnSelectedCell, setAttnSelectedCell] = useState(null);
+
+  // 4. Network Simulator State
+  const [cdnEnabled, setCdnEnabled] = useState(true);
+  const [dbIndexed, setDbIndexed] = useState(true);
+  const [networkLogs, setNetworkLogs] = useState([
+    "Mainframe core routing engine initialized.",
+    "Awaiting dispatch trigger..."
+  ]);
+  const [routingState, setRoutingState] = useState("idle"); // "idle" | "client_to_lb" | "lb_to_cdn" | "cdn_to_client" | "lb_to_srv" | "srv_to_db" | "db_processing" | "db_to_srv" | "srv_to_client"
+  const [activeServer, setActiveServer] = useState("A");
+  const [latencyValue, setLatencyValue] = useState(null);
+
+  // Safe sound utilities
+  const triggerSuccessBeep = () => {
+    try { playSuccessBeep(audioEnabled); } catch (e) {}
+  };
+  const triggerSweep = (isUp = true) => {
+    try { playSweepSound(audioEnabled, isUp); } catch (e) {}
+  };
+
+  const handleBlockClick = (index) => {
+    setMemoryBlocks(prev => {
+      const next = [...prev];
+      if (next[index] === 0) {
+        next[index] = 1; // Allocate
+      } else if (next[index] === 1) {
+        next[index] = 2; // Leak
+      } else {
+        next[index] = 0; // Free
+      }
+      return next;
+    });
+    triggerSuccessBeep();
+  };
+
+  // Commands Handler
+  const executeCommand = (cmdText) => {
+    const cmd = cmdText.trim();
+    if (!cmd) return;
+
+    const lowerCmd = cmd.toLowerCase().trim();
+    let response = [];
+
+    const nextHistory = [...terminalHistory, { type: "input", text: cmd }];
+
+    if (lowerCmd === "help") {
+      response = [
+        { type: "info", text: "AVAILABLE COGNITIVE SYSTEMS COMMANDS:" },
+        { type: "info", text: "  sysinfo       - Display spacecraft physical core specs & cache alignment" },
+        { type: "info", text: "  diagnostics   - Run deep diagnostic sweep across sectors & core workloads" },
+        { type: "info", text: "  alloc <num>   - Allocate 'num' contiguous blocks in virtual memory heap" },
+        { type: "info", text: "  explain <key> - Query systems documentation (e.g. 'mmap', 'attention', 'hnsw')" },
+        { type: "info", text: "  git commit    - Trigger database sublight git DAG commit node" },
+        { type: "info", text: "  clear         - Wipe terminal memory log" }
+      ];
+      triggerSuccessBeep();
+    } else if (lowerCmd === "clear") {
+      setTerminalHistory([]);
+      setTerminalInput("");
+      return;
+    } else if (lowerCmd === "sysinfo") {
+      response = [
+        { type: "info", text: " " },
+        { type: "success", text: "  🛰️  VESSEL ARCHITECTURE: COGNITIVE SILICON CORE V16-RT" },
+        { type: "success", text: "  🚀  OS KERNEL: LINUX REALTIME-FLOW16-GEN v6.12.8-REBEL" },
+        { type: "success", text: "  ⚡  L1 CACHE: 32KB DATA / 32KB INSTRUCTION (LATENCY: 0.9ns)" },
+        { type: "success", text: "  🧬  L2 CACHE: 512KB COHERENT CORE ALIGNMENT (LATENCY: 2.8ns)" },
+        { type: "success", text: "  🌀  L3 CACHE: 16MB SYSTEM-WIDE SHARED (LATENCY: 11.2ns)" }
+      ];
+      triggerSuccessBeep();
+    } else if (lowerCmd === "diagnostics") {
+      response = [
+        { type: "info", text: "Scanning space sectors & physical machine nodes..." },
+        { type: "success", text: "[PASS] Node 0 (Cache L1 Alignment): Static padding optimal. No false sharing." },
+        { type: "success", text: "[PASS] Node 1 (Virtual Paging): 4096B page size. TLB Hit Rate: 99.85%." },
+        { type: "success", text: "[PASS] Node 2 (Threadpool Scheduler): Epoll reactor loop healthy. Threads active: 8." },
+        { type: "success", text: "[PASS] Core Temperature: Ambient radiator flow operating at 34°C." },
+        { type: "info", text: "Result: System integrity sitting at optimal 99.88%." }
+      ];
+      triggerSuccessBeep();
+    } else if (lowerCmd.startsWith("alloc ")) {
+      const parts = lowerCmd.split(" ");
+      const num = parseInt(parts[1]);
+      if (isNaN(num) || num <= 0 || num > 32) {
+        response = [{ type: "error", text: "Error: Specify contiguous block count between 1 and 32 (e.g. 'alloc 4')." }];
+      } else {
+        let allocatedCount = 0;
+        setMemoryBlocks(prev => {
+          const next = [...prev];
+          let firstFreeIdx = -1;
+          
+          if (allocAlgo === "first-fit") {
+            // Find first chunk of free contiguous blocks
+            for (let i = 0; i <= next.length - num; i++) {
+              let possible = true;
+              for (let j = 0; j < num; j++) {
+                if (next[i + j] !== 0) { possible = false; break; }
+              }
+              if (possible) { firstFreeIdx = i; break; }
+            }
+          }
+
+          if (firstFreeIdx !== -1) {
+            for (let j = 0; j < num; j++) {
+              next[firstFreeIdx + j] = 1;
+            }
+            allocatedCount = num;
+          } else {
+            // Fallback: allocate whatever is free
+            for (let i = 0; i < next.length; i++) {
+              if (next[i] === 0) {
+                next[i] = 1;
+                allocatedCount++;
+                if (allocatedCount === num) break;
+              }
+            }
+          }
+          return next;
+        });
+
+        if (allocatedCount > 0) {
+          response = [
+            { type: "success", text: `[+] malloc(${num}) returned address pointer offset ${Math.floor(Math.random() * 0xFFFFFF).toString(16).toUpperCase()}` },
+            { type: "success", text: `[+] Flagged ${allocatedCount} block nodes in memory map.` },
+            { type: "info", text: `[+] Review heap blocks visualizer in the [Memory Allocator] sub-tab.` }
+          ];
+          triggerSweep(true);
+        } else {
+          response = [{ type: "error", text: "Error: Out of memory! Heap space completely saturated. Please trigger a GC Sweep." }];
+        }
+      }
+    } else if (lowerCmd.startsWith("explain ")) {
+      const parts = lowerCmd.split(" ");
+      const keyword = parts.slice(1).join(" ").trim().toLowerCase();
+
+      const docLibrary = {
+        mmap: "mmap() creates a direct mapping in the virtual address space of the process. It is used to load huge datasets or databases without overhead, enabling zero-copy physical operations.",
+        attention: "Self-attention computes dynamic weights representing semantic dependency between sequence tokens. Modeled mathematically as: Softmax(QKᵀ / √d_k)V.",
+        cache: "A hardware cache stores frequently retrieved resources. Dynamic spatial alignment prevents 'false sharing' across high-frequency thread boundaries.",
+        mutex: "Mutex (Mutual Exclusion) enforces strict synchronization primitives on shared registers, ensuring parallel threads do not overwrite shared data, preventing catastrophic races.",
+        paging: "Virtual Memory Paging divides memory into physical pages (typically 4KB) mapped dynamically via Translation Lookaside Buffers (TLB), preventing external fragmentation.",
+        hnsw: "HNSW (Hierarchical Navigable Small World) maps high-dimensional vector spaces into multi-layered navigation graphs, achieving near-logarithmic approximate nearest neighbor lookups.",
+        git: "Git logs commit histories as cryptographic Directed Acyclic Graphs (DAG). Commits represent immutable system snapshots tied to cryptographic parent hashes."
+      };
+
+      const matched = Object.keys(docLibrary).find(k => keyword.includes(k) || k.includes(keyword));
+      if (matched) {
+        response = [
+          { type: "success", text: `[EXPLAIN: ${matched.toUpperCase()}]` },
+          { type: "info", text: docLibrary[matched] }
+        ];
+        triggerSuccessBeep();
+      } else {
+        response = [
+          { type: "error", text: `Error: Technical concept '${keyword}' not found in mainframe database.` },
+          { type: "info", text: "Concepts logged: 'mmap', 'attention', 'cache', 'mutex', 'paging', 'hnsw', 'git'." }
+        ];
+      }
+    } else if (lowerCmd === "git commit") {
+      const hash = Math.random().toString(16).substring(2, 9).toUpperCase();
+      response = [
+        { type: "success", text: `[master node-${hash}] systems sync update commit` },
+        { type: "success", text: " 3 files modified, 45 database lines inserted(+), 12 deleted(-)" },
+        { type: "info", text: "DAG Node integrated. Propagating sublight sync across cognitive grid..." },
+        { type: "success", text: "Cloud sync accomplished. All cluster nodes synchronized." }
+      ];
+      triggerSuccessBeep();
+    } else {
+      response = [
+        { type: "error", text: `Command unrecognized: '${cmd}'` },
+        { type: "info", text: "Type 'help' to review the physical diagnostics terminal reference." }
+      ];
+    }
+
+    setTerminalHistory([...nextHistory, ...response]);
+    setTerminalInput("");
+  };
+
+  const handleTerminalSubmit = (e) => {
+    e.preventDefault();
+    executeCommand(terminalInput);
+  };
+
+  // Memory Allocator Utilities
+  const allocateMemoryHeap = () => {
+    let allocated = 0;
+    setMemoryBlocks(prev => {
+      const next = [...prev];
+      let startIdx = -1;
+
+      if (allocAlgo === "first-fit") {
+        for (let i = 0; i <= next.length - allocSize; i++) {
+          let chunkFree = true;
+          for (let j = 0; j < allocSize; j++) {
+            if (next[i + j] !== 0) { chunkFree = false; break; }
+          }
+          if (chunkFree) { startIdx = i; break; }
+        }
+      } else {
+        // Best-fit simulator
+        let bestStartIdx = -1;
+        let bestChunkLen = Infinity;
+        let currentStart = -1;
+        let currentLen = 0;
+
+        for (let i = 0; i < next.length; i++) {
+          if (next[i] === 0) {
+            if (currentStart === -1) currentStart = i;
+            currentLen++;
+          } else {
+            if (currentStart !== -1) {
+              if (currentLen >= allocSize && currentLen < bestChunkLen) {
+                bestChunkLen = currentLen;
+                bestStartIdx = currentStart;
+              }
+              currentStart = -1;
+              currentLen = 0;
+            }
+          }
+        }
+        if (currentStart !== -1 && currentLen >= allocSize && currentLen < bestChunkLen) {
+          bestStartIdx = currentStart;
+        }
+        startIdx = bestStartIdx;
+      }
+
+      if (startIdx !== -1) {
+        for (let j = 0; j < allocSize; j++) {
+          next[startIdx + j] = 1; // Allocated
+        }
+      } else {
+        // Fallback: simple allocation
+        for (let i = 0; i < next.length; i++) {
+          if (next[i] === 0) {
+            next[i] = 1;
+            allocated++;
+            if (allocated === allocSize) break;
+          }
+        }
+      }
+      return next;
+    });
+    triggerSuccessBeep();
+  };
+
+  const triggerGcSweep = () => {
+    setGcSweeping(true);
+    triggerSweep(true);
+    setTimeout(() => {
+      setMemoryBlocks(prev => prev.map(b => b === 2 ? 0 : b)); // Clean leaks
+      setGcSweeping(false);
+    }, 1200);
+  };
+
+  const forceMemoryLeak = () => {
+    setMemoryBlocks(prev => {
+      const next = [...prev];
+      let leakedCount = 0;
+      for (let i = 0; i < next.length; i++) {
+        if (next[i] === 0) {
+          next[i] = 2; // Leaked node (red)
+          leakedCount++;
+          if (leakedCount === 2) break;
+        }
+      }
+      return next;
+    });
+    triggerSweep(false);
+  };
+
+  const triggerResetMemory = () => {
+    setMemoryBlocks(Array(32).fill(0));
+    triggerSweep(false);
+  };
+
+  // Self-Attention Matrix
+  const attnTokens = ["CPU", "Kernel", "Malloc", "Cache", "Thread", "Mutex", "SQL", "LLM"];
+  
+  const getAttentionValue = (rowIdx, colIdx) => {
+    const relationWeights = {
+      "CPU_Cache": 0.94, "Cache_CPU": 0.94,
+      "Thread_Mutex": 0.88, "Mutex_Thread": 0.88,
+      "Kernel_Malloc": 0.85, "Malloc_Kernel": 0.85,
+      "LLM_Cache": 0.32, "SQL_Mutex": 0.45,
+      "Kernel_CPU": 0.78, "CPU_Kernel": 0.78,
+      "Thread_Kernel": 0.72, "Kernel_Thread": 0.72,
+      "Malloc_Cache": 0.68, "Cache_Malloc": 0.68
+    };
+
+    const tokenRow = attnTokens[rowIdx];
+    const tokenCol = attnTokens[colIdx];
+
+    if (rowIdx === colIdx) return 0.40;
+    const directKey = `${tokenRow}_${tokenCol}`;
+    const reverseKey = `${tokenCol}_${tokenRow}`;
+
+    if (relationWeights[directKey] !== undefined) return relationWeights[directKey];
+    if (relationWeights[reverseKey] !== undefined) return relationWeights[reverseKey];
+
+    // Pseudo-random normalized score
+    return parseFloat(((rowIdx * 3 + colIdx * 7) % 10 / 18 + 0.1).toFixed(2));
+  };
+
+  // Packet Dispatch Game
+  const runPacketDispatch = () => {
+    if (routingState !== "idle") return;
+
+    const targetServer = Math.random() > 0.5 ? "A" : "B";
+    setActiveServer(targetServer);
+
+    setNetworkLogs([]);
+    const logs = [];
+    const pushLog = (txt) => {
+      logs.push(`[${new Date().toLocaleTimeString()}] ${txt}`);
+      setNetworkLogs([...logs]);
+    };
+
+    pushLog("Initiating high-frequency Client GET packet.");
+    triggerSuccessBeep();
+    setRoutingState("client_to_lb");
+
+    setTimeout(() => {
+      pushLog("🔀 Load Balancer routing request headers...");
+      setRoutingState("lb_to_cdn");
+
+      setTimeout(() => {
+        if (cdnEnabled) {
+          pushLog("⚡ CDN CACHE HIT! Delivering index.html cached assets instantly from edge node.");
+          setRoutingState("cdn_to_client");
+
+          setTimeout(() => {
+            pushLog("✅ Connection resolved perfectly. RTT: 4ms.");
+            setLatencyValue(4);
+            setRoutingState("idle");
+            triggerSuccessBeep();
+          }, 500);
+        } else {
+          pushLog(`❄️ CDN Cache Bypass. Transporting packet to Core Server ${targetServer}...`);
+          setRoutingState("lb_to_srv");
+
+          setTimeout(() => {
+            pushLog(`⚙️ Server ${targetServer} initialized database transaction pipeline.`);
+            setRoutingState("srv_to_db");
+
+            setTimeout(() => {
+              pushLog(`🗄️ Database querying system. [Indexed status: ${dbIndexed ? "ACTIVE (Fast B-Tree)" : "INACTIVE (Slow Table Scan)"}]`);
+              setRoutingState("db_processing");
+
+              const queryDelay = dbIndexed ? 400 : 2000;
+              setTimeout(() => {
+                if (dbIndexed) {
+                  pushLog("🎯 Index hit! Found matching record pointers immediately.");
+                } else {
+                  pushLog("⚠️ DB WARNING: Sequential scan forced! Thread blocked on sequential storage seek.");
+                }
+                pushLog("📦 Data mapped to packet frame. Routing back to Server core.");
+                setRoutingState("db_to_srv");
+
+                setTimeout(() => {
+                  pushLog(`🖥️ Server ${targetServer} flushed headers and dispatched network frame.`);
+                  setRoutingState("srv_to_client");
+
+                  setTimeout(() => {
+                    const finalLatency = dbIndexed ? 48 : 520;
+                    pushLog(`✅ Request fully synchronized. Latency: ${finalLatency}ms.`);
+                    setLatencyValue(finalLatency);
+                    setRoutingState("idle");
+                    if (!dbIndexed) {
+                      triggerSweep(false);
+                    } else {
+                      triggerSuccessBeep();
+                    }
+                  }, 500);
+                }, 500);
+              }, queryDelay);
+            }, 500);
+          }, 500);
+        }
+      }, 500);
+    }, 500);
+  };
+
+  return (
+    <div className="space-y-5 rm-fade">
+      {/* Lab Heading Header */}
+      <div style={{
+        background: "linear-gradient(135deg, rgba(16, 36, 66, 0.45), rgba(10, 22, 40, 0.25))",
+        border: `1.5px solid rgba(34, 211, 238, 0.18)`,
+        borderRadius: "16px",
+        padding: "20px 24px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: "14px",
+        boxShadow: "0 0 25px rgba(34, 211, 238, 0.08)"
+      }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span className="animate-pulse" style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: colors.cyan, boxShadow: `0 0 8px ${colors.cyan}` }} />
+            <span style={{ fontSize: "10px", color: colors.cyan, fontWeight: "800", letterSpacing: "2.5px", textTransform: "uppercase" }}>
+              Systems Holodeck
+            </span>
+          </div>
+          <div style={{ fontSize: "20px", fontWeight: "900", color: T1, fontFamily: "'Playfair Display', serif", fontStyle: "italic", marginTop: "3px" }}>
+            Vessel Mainframe & Diagnostics Lab
+          </div>
+          <div style={{ fontSize: "11px", color: T3, marginTop: "2px" }}>
+            Interactive tactile sandboxes modeling hardware caches, memory layout, self-attention, and network packets.
+          </div>
+        </div>
+
+        {/* Audio reminder badge */}
+        <div style={{
+          fontSize: "10px",
+          background: "rgba(34, 211, 238, 0.05)",
+          border: "1px solid rgba(34, 211, 238, 0.12)",
+          padding: "5px 12px",
+          borderRadius: "15px",
+          color: colors.cyan,
+          fontWeight: "700",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px"
+        }}>
+          {audioEnabled ? "🔊 HOLODECK SOUNDS SYNCED" : "🔇 SOUNDS MUTED"}
+        </div>
+      </div>
+
+      {/* Sub-tab Selectors (Tactile Glassmorphic Rail) */}
+      <div style={{
+        display: "flex",
+        background: "rgba(10, 22, 40, 0.35)",
+        border: `1px solid ${BDR}`,
+        borderRadius: "12px",
+        padding: "4px"
+      }}>
+        {[
+          { key: "terminal", label: "Terminal CLI", icon: Terminal, color: colors.cyan },
+          { key: "memory", label: "Memory Heap Allocator", icon: Layers, color: colors.magenta },
+          { key: "attention", label: "Self-Attention Map", icon: Brain, color: colors.purple },
+          { key: "network", label: "Packet Node Router", icon: Network, color: colors.green }
+        ].map(item => {
+          const active = labTab === item.key;
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.key}
+              className="rm-btn"
+              onClick={() => {
+                setLabTab(item.key);
+                triggerSuccessBeep();
+              }}
+              style={{
+                flex: 1,
+                padding: "10px 8px",
+                borderRadius: "9px",
+                background: active ? "rgba(255, 255, 255, 0.06)" : "transparent",
+                border: `1px solid ${active ? "rgba(255,255,255,0.08)" : "transparent"}`,
+                color: active ? T1 : T3,
+                fontSize: "11.5px",
+                fontWeight: active ? "800" : "500",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                transition: "all 0.2s ease"
+              }}
+            >
+              <Icon size={14} style={{ color: active ? item.color : T3, filter: active ? `drop-shadow(0 0 4px ${item.color})` : "none" }} />
+              <span className="hidden md:inline">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* SUB-TAB CONTENTS */}
+
+      {/* 1. Terminal CLI Tab */}
+      {labTab === "terminal" && (
+        <div style={{
+          background: "rgba(3, 8, 18, 0.65)",
+          border: `1.5px solid ${BDR2}`,
+          borderRadius: "14px",
+          overflow: "hidden",
+          boxShadow: "0 15px 40px rgba(0,0,0,0.7)"
+        }} className="grid grid-cols-1 lg:grid-cols-[1fr_220px]">
+          {/* Main Shell Window */}
+          <div style={{ display: "flex", flexDirection: "column", height: "350px", padding: "18px" }}>
+            {/* Window chrome topbar */}
+            <div style={{ display: "flex", gap: "6px", marginBottom: "14px", borderBottom: "1px solid rgba(255,255,255,0.04)", paddingBottom: "10px" }}>
+              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#EF4444" }} />
+              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#FBBF24" }} />
+              <div style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#10F5A0" }} />
+              <div style={{ flex: 1 }} />
+              <span style={{ fontSize: "9px", fontFamily: "monospace", color: T3, tracking: "1px" }}>mainframe_shell_rt</span>
+            </div>
+
+            {/* Scrollable Command Outputs */}
+            <div style={{ flex: 1, overflowY: "auto", fontFamily: "var(--font-mono)", fontSize: "11px", display: "flex", flexDirection: "column", gap: "8px" }} className="no-scrollbar">
+              {terminalHistory.map((item, index) => {
+                if (item.type === "input") {
+                  return (
+                    <div key={index} style={{ color: colors.cyan }}>
+                      <span style={{ opacity: 0.5 }}>vessel@mainframe:~$</span> {item.text}
+                    </div>
+                  );
+                }
+                let cl = T2;
+                if (item.type === "sys") cl = T3;
+                if (item.type === "success") cl = colors.green;
+                if (item.type === "error") cl = "#F87171";
+                if (item.type === "info") cl = T2;
+                return (
+                  <div key={index} style={{ color: cl, whiteSpace: "pre-wrap", lineHeight: "1.5" }}>
+                    {item.text}
+                  </div>
+                );
+              })}
+              <div ref={terminalBottomRef} />
+            </div>
+
+            {/* Form Input Line */}
+            <form onSubmit={handleTerminalSubmit} style={{ display: "flex", gap: "8px", borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: "12px", marginTop: "10px" }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: colors.cyan }}>vessel@mainframe:~$</span>
+              <input
+                type="text"
+                value={terminalInput}
+                onChange={e => setTerminalInput(e.target.value)}
+                placeholder="Type 'help' or click a right macro..."
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "11px",
+                  color: T1
+                }}
+              />
+              <button type="submit" style={{ background: "none", border: "none", color: colors.cyan, cursor: "pointer", fontSize: "12px" }}>↵</button>
+            </form>
+          </div>
+
+          {/* Quick-trigger Macros Side Rail */}
+          <div style={{
+            background: "rgba(10, 22, 40, 0.25)",
+            borderLeft: `1px solid rgba(255,255,255,0.04)`,
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px"
+          }}>
+            <div style={{ fontSize: "9px", color: T3, fontWeight: "800", letterSpacing: "1px", textTransform: "uppercase" }}>Macro Terminals</div>
+            {[
+              { label: "⚙️ sysinfo", cmd: "sysinfo" },
+              { label: "📈 diagnostics", cmd: "diagnostics" },
+              { label: "📦 git commit", cmd: "git commit" },
+              { label: "🧩 alloc 4", cmd: "alloc 4" },
+              { label: "📑 explain mmap", cmd: "explain mmap" },
+              { label: "🧠 explain attention", cmd: "explain attention" },
+              { label: "🧹 Clear Terminal", cmd: "clear" }
+            ].map(macro => (
+              <button
+                key={macro.cmd}
+                onClick={() => executeCommand(macro.cmd)}
+                className="rm-card text-left"
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  background: "rgba(255,255,255,0.02)",
+                  border: `1px solid ${BDR}`,
+                  borderRadius: "6px",
+                  fontSize: "10.5px",
+                  color: T2,
+                  fontFamily: "var(--font-mono)",
+                  cursor: "pointer",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={e => e.target.style.borderColor = colors.cyan}
+                onMouseLeave={e => e.target.style.borderColor = BDR}
+              >
+                {macro.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 2. Memory Allocator Simulator Tab */}
+      {labTab === "memory" && (
+        <div style={{
+          background: "rgba(10, 22, 40, 0.45)",
+          border: `1px solid ${BDR}`,
+          borderRadius: "14px",
+          padding: "20px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.6)"
+        }} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Allocator Controls Panel */}
+          <div className="space-y-4">
+            <div style={{ fontSize: "14px", fontWeight: "800", color: T1, display: "flex", alignItems: "center", gap: "8px" }}>
+              <Layers size={16} className="text-[#FF2D78]" />
+              Virtual Heap Memory Simulator
+            </div>
+            <p style={{ fontSize: "11.5px", color: T3, lineHeight: "1.6" }}>
+              Simulates low-level <strong>malloc()</strong> allocations and heap memory fragmentation. Under standard conditions, allocating and failing to free resources produces critical memory leaks.
+            </p>
+
+            {/* Controls */}
+            <div className="space-y-3 p-14 bg-white/2 rounded-lg border border-white/4">
+              {/* Algorithm choice */}
+              <div>
+                <div style={{ fontSize: "9px", color: T3, fontWeight: "800", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" }}>Allocation Strategy</div>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  {["first-fit", "best-fit"].map(algo => (
+                    <button
+                      key={algo}
+                      onClick={() => { setAllocAlgo(algo); triggerSuccessBeep(); }}
+                      style={{
+                        flex: 1,
+                        padding: "6px 8px",
+                        borderRadius: "5px",
+                        fontSize: "10.5px",
+                        fontWeight: "700",
+                        background: allocAlgo === algo ? "rgba(255,2D,120,0.12)" : "rgba(255,255,255,0.02)",
+                        border: `1px solid ${allocAlgo === algo ? "#FF2D78" : "rgba(255,255,255,0.06)"}`,
+                        color: allocAlgo === algo ? "#FF2D78" : T3,
+                        cursor: "pointer",
+                        textTransform: "capitalize"
+                      }}
+                    >
+                      {algo.replace("-", " ")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Allocation size */}
+              <div>
+                <div style={{ fontSize: "9px", color: T3, fontWeight: "800", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" }}>Allocation Size (Contiguous Blocks)</div>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  {[1, 2, 4, 8].map(size => (
+                    <button
+                      key={size}
+                      onClick={() => { setAllocSize(size); triggerSuccessBeep(); }}
+                      style={{
+                        flex: 1,
+                        padding: "6px 8px",
+                        borderRadius: "5px",
+                        fontSize: "10.5px",
+                        fontWeight: "700",
+                        background: allocSize === size ? "rgba(255,2D,120,0.12)" : "rgba(255,255,255,0.02)",
+                        border: `1px solid ${allocSize === size ? "#FF2D78" : "rgba(255,255,255,0.06)"}`,
+                        color: allocSize === size ? "#FF2D78" : T3,
+                        cursor: "pointer"
+                      }}
+                    >
+                      {size} Block{size > 1 ? "s" : ""}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", paddingTop: "10px" }}>
+                <button
+                  onClick={allocateMemoryHeap}
+                  className="rm-btn"
+                  style={{
+                    padding: "8px 12px",
+                    background: "linear-gradient(135deg, #FF2D78, #7C3AED)",
+                    border: "none",
+                    borderRadius: "6px",
+                    color: T1,
+                    fontSize: "11px",
+                    fontWeight: "800",
+                    cursor: "pointer"
+                  }}
+                >
+                  🚀 Malloc({allocSize})
+                </button>
+                <button
+                  onClick={forceMemoryLeak}
+                  className="rm-btn"
+                  style={{
+                    padding: "8px 12px",
+                    background: "rgba(251,191,36,0.08)",
+                    border: "1px solid rgba(251,191,36,0.3)",
+                    borderRadius: "6px",
+                    color: colors.gold,
+                    fontSize: "11px",
+                    fontWeight: "800",
+                    cursor: "pointer"
+                  }}
+                >
+                  ⚠️ Inject Memory Leak
+                </button>
+                <button
+                  onClick={triggerGcSweep}
+                  className="rm-btn"
+                  disabled={gcSweeping}
+                  style={{
+                    padding: "8px 12px",
+                    background: "rgba(16,245,160,0.08)",
+                    border: "1px solid rgba(16,245,160,0.3)",
+                    borderRadius: "6px",
+                    color: colors.green,
+                    fontSize: "11px",
+                    fontWeight: "800",
+                    cursor: "pointer"
+                  }}
+                >
+                  🧹 Mark-Sweep GC
+                </button>
+                <button
+                  onClick={triggerResetMemory}
+                  className="rm-btn"
+                  style={{
+                    padding: "8px 12px",
+                    background: "transparent",
+                    border: `1px solid ${BDR}`,
+                    borderRadius: "6px",
+                    color: T3,
+                    fontSize: "11px",
+                    fontWeight: "800",
+                    cursor: "pointer"
+                  }}
+                >
+                  ↺ Reset Memory
+                </button>
+              </div>
+            </div>
+
+            {/* Heap Legend */}
+            <div style={{ display: "flex", gap: "14px", fontSize: "10px", color: T3, justifyContent: "center" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <span style={{ width: "9px", height: "9px", border: `1px solid ${colors.green}`, borderRadius: "2px" }} /> Free
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <span style={{ width: "9px", height: "9px", background: colors.magenta, borderRadius: "2px" }} /> Allocated
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <span className="animate-pulse" style={{ width: "9px", height: "9px", background: colors.gold, borderRadius: "2px", boxShadow: `0 0 4px ${colors.gold}` }} /> Leaked
+              </span>
+            </div>
+          </div>
+
+          {/* Grid visualizer */}
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", background: "rgba(3,8,18,0.25)", border: `1px solid ${BDR}`, borderRadius: "10px", padding: "18px", position: "relative" }}>
+            
+            {/* GC Scanning sweep-bar overlay */}
+            {gcSweeping && (
+              <div style={{
+                position: "absolute",
+                top: 0,
+                bottom: 0,
+                left: 0,
+                width: "6px",
+                background: `linear-gradient(90deg, ${colors.green}, transparent)`,
+                boxShadow: `0 0 16px ${colors.green}`,
+                animation: "gcSweepAnimate 1.2s cubic-bezier(0.16, 1, 0.3, 1) both",
+                pointerEvents: "none"
+              }} />
+            )}
+
+            <div style={{ fontSize: "10px", color: T3, fontFamily: "monospace", marginBottom: "12px", letterSpacing: "1px" }}>
+              VIRTUAL MEMORY LAYOUT (32 BLOCKS OF 32KB)
+            </div>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(8, 1fr)",
+              gap: "8px",
+              width: "100%",
+              maxWidth: "320px"
+            }}>
+              {memoryBlocks.map((state, index) => {
+                let borderCol = "rgba(255,255,255,0.06)";
+                let bgCol = "transparent";
+                let shadow = "none";
+                let labelColor = T3;
+
+                if (state === 0) {
+                  borderCol = `1px solid ${colors.green}20`;
+                  bgCol = "rgba(16,245,160,0.01)";
+                } else if (state === 1) {
+                  borderCol = `1px solid ${colors.magenta}`;
+                  bgCol = colors.magenta + "CC";
+                  shadow = `0 0 6px ${colors.magenta}50`;
+                  labelColor = T1;
+                } else if (state === 2) {
+                  borderCol = `1px solid ${colors.gold}`;
+                  bgCol = colors.gold + "CC";
+                  shadow = `0 0 10px ${colors.gold}80`;
+                  labelColor = "#000000";
+                }
+
+                return (
+                  <div
+                    key={index}
+                    onClick={() => handleBlockClick(index)}
+                    className="rm-card"
+                    title={`Block 0x${(index * 4).toString(16).toUpperCase().padStart(2, "0")}`}
+                    style={{
+                      aspectRatio: "1/1",
+                      border: borderCol,
+                      background: bgCol,
+                      boxShadow: shadow,
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "9px",
+                      fontFamily: "monospace",
+                      fontWeight: "800",
+                      color: labelColor,
+                      cursor: "pointer",
+                      transition: "all 0.2s"
+                    }}
+                  >
+                    {`0x${(index * 4).toString(16).toUpperCase().padStart(2, "0")}`}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ width: "100%", marginTop: "14px", borderTop: "1px solid rgba(255,255,255,0.04)", paddingTop: "12px", fontSize: "11px", color: T3, textAlign: "center" }}>
+              Memory Saturated: <strong>{Math.round((memoryBlocks.filter(b => b > 0).length / 32) * 100)}%</strong> · Leaked blocks: <strong style={{ color: colors.gold }}>{memoryBlocks.filter(b => b === 2).length}</strong>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Neural Net Attention Matrix Tab */}
+      {labTab === "attention" && (
+        <div style={{
+          background: "rgba(10, 22, 40, 0.45)",
+          border: `1px solid ${BDR}`,
+          borderRadius: "14px",
+          padding: "20px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.6)"
+        }} className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          
+          {/* Attention explanations */}
+          <div className="lg:col-span-2 space-y-4">
+            <div style={{ fontSize: "14px", fontWeight: "800", color: T1, display: "flex", alignItems: "center", gap: "8px" }}>
+              <Brain size={16} className="text-[#A78BFA]" />
+              Self-Attention Matrix Visualizer
+            </div>
+            <p style={{ fontSize: "11.5px", color: T3, lineHeight: "1.6" }}>
+              Transformers use Query-Key attention equations to dynamically calculate which words (concepts) are mathematically contextualized together.
+            </p>
+
+            <div style={{ padding: "12px 14px", background: "rgba(255,255,255,0.01)", border: `1.5px dashed ${colors.purple}30`, borderRadius: "10px", fontSize: "11.5px" }}>
+              <div style={{ fontWeight: "700", color: colors.purple, fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+                Mathematical Equation
+              </div>
+              <code style={{ fontFamily: "monospace", display: "block", background: "rgba(3,8,18,0.5)", padding: "6px", borderRadius: "4px", color: T1, fontSize: "10.5px" }}>
+                Attention(Q, K, V) = Softmax(QKᵀ / √d_k)V
+              </code>
+            </div>
+
+            {/* Informational box based on selections */}
+            <div style={{ background: "rgba(255,255,255,0.02)", border: `1.5px solid ${BDR}`, borderRadius: "10px", padding: "14px" }}>
+              {hoveredRow !== null && hoveredCol !== null ? (
+                <>
+                  <div style={{ fontSize: "9px", color: colors.purple, fontWeight: "800", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "4px" }}>
+                    Attention Relationship Focus
+                  </div>
+                  <div style={{ fontSize: "12px", color: T1, fontWeight: "700" }}>
+                    {attnTokens[hoveredRow]} ⇄ {attnTokens[hoveredCol]}
+                  </div>
+                  <p style={{ fontSize: "11px", color: T3, marginTop: "6px", lineHeight: "1.5" }}>
+                    The neural attention equation yields a connection index of <strong>{getAttentionValue(hoveredRow, hoveredCol)}</strong>. 
+                    {getAttentionValue(hoveredRow, hoveredCol) > 0.8 ? (
+                      " This represents a highly coherent connection! Low-level thread structures are tightly correlated with synchronization systems."
+                    ) : getAttentionValue(hoveredRow, hoveredCol) > 0.6 ? (
+                      " Represents standard operational semantic correlation."
+                    ) : (
+                      " Low attention binding: these domains operate within distinct compiler pipelines."
+                    )}
+                  </p>
+                </>
+              ) : (
+                <div style={{ textAlign: "center", color: T3, padding: "15px 0", fontSize: "11.5px" }}>
+                  Hover over matrix cells to capture structural attention coefficients.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Matrix visualization */}
+          <div className="lg:col-span-3 flex flex-col justify-center items-center">
+            {/* Axis headers */}
+            <div style={{ display: "grid", gridTemplateColumns: "55px repeat(8, 1fr)", width: "100%", maxWidth: "340px", gap: "3px", marginBottom: "3px" }}>
+              <div />
+              {attnTokens.map((t, idx) => (
+                <div
+                  key={t}
+                  style={{
+                    fontSize: "8.5px",
+                    fontFamily: "monospace",
+                    fontWeight: "800",
+                    color: hoveredCol === idx ? colors.purple : T3,
+                    textAlign: "center"
+                  }}
+                >
+                  {t}
+                </div>
+              ))}
+            </div>
+
+            <div style={{ width: "100%", maxWidth: "340px", display: "flex", flexDirection: "column", gap: "3px" }}>
+              {attnTokens.map((rowToken, rIdx) => (
+                <div key={rowToken} style={{ display: "grid", gridTemplateColumns: "55px repeat(8, 1fr)", gap: "3px", alignItems: "center" }}>
+                  
+                  {/* Left row header */}
+                  <div
+                    style={{
+                      fontSize: "9px",
+                      fontFamily: "monospace",
+                      fontWeight: "800",
+                      color: hoveredRow === rIdx ? colors.purple : T3,
+                      textAlign: "right",
+                      paddingRight: "6px"
+                    }}
+                  >
+                    {rowToken}
+                  </div>
+
+                  {/* Matrix cells */}
+                  {attnTokens.map((colToken, cIdx) => {
+                    const weight = getAttentionValue(rIdx, cIdx);
+                    const isSelected = hoveredRow === rIdx && hoveredCol === cIdx;
+                    
+                    // Style base weight opacity
+                    let cellBg = `rgba(167, 139, 250, ${weight * 0.9})`;
+                    let borderStyle = isSelected ? `1px solid ${T1}` : "1px solid transparent";
+
+                    return (
+                      <div
+                        key={colToken}
+                        onMouseEnter={() => {
+                          setHoveredRow(rIdx);
+                          setHoveredCol(cIdx);
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredRow(null);
+                          setHoveredCol(null);
+                        }}
+                        style={{
+                          aspectRatio: "1/1",
+                          background: cellBg,
+                          border: borderStyle,
+                          borderRadius: "3px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "8px",
+                          fontFamily: "monospace",
+                          fontWeight: "800",
+                          color: weight > 0.6 ? "#000000" : T1,
+                          cursor: "crosshair",
+                          boxShadow: isSelected ? `0 0 8px ${colors.purple}` : "none",
+                          transition: "all 0.1s ease"
+                        }}
+                      >
+                        {weight.toFixed(2)}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* 4. Network Node Packet Router Game Tab */}
+      {labTab === "network" && (
+        <div style={{
+          background: "rgba(10, 22, 40, 0.45)",
+          border: `1px solid ${BDR}`,
+          borderRadius: "14px",
+          padding: "20px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.6)"
+        }} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Configuration Parameters Panel */}
+          <div className="lg:col-span-5 space-y-4">
+            <div style={{ fontSize: "14px", fontWeight: "800", color: T1, display: "flex", alignItems: "center", gap: "8px" }}>
+              <Network size={16} className="text-[#10F5A0]" />
+              Packet Routing Dispatcher
+            </div>
+            <p style={{ fontSize: "11.5px", color: T3, lineHeight: "1.6" }}>
+              Visualizes client-to-database requests. Enable cached layers (CDN) or database indexes to observe sublight routing latency.
+            </p>
+
+            <div className="p-14 bg-white/2 rounded-lg border border-white/4 space-y-4">
+              
+              {/* Parameter 1: CDN */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "11.5px", fontWeight: "700", color: T1 }}>Enable Edge CDN Cache</div>
+                  <div style={{ fontSize: "9.5px", color: T3, marginTop: "1.5px" }}>Resolves requests at edge before hit origin servers.</div>
+                </div>
+                <button
+                  onClick={() => { setCdnEnabled(!cdnEnabled); triggerSuccessBeep(); }}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: "12px",
+                    background: cdnEnabled ? "rgba(16,245,160,0.12)" : "rgba(255,255,255,0.02)",
+                    border: `1px solid ${cdnEnabled ? colors.green : "rgba(255,255,255,0.06)"}`,
+                    color: cdnEnabled ? colors.green : T3,
+                    fontSize: "10px",
+                    fontWeight: "800",
+                    cursor: "pointer"
+                  }}
+                >
+                  {cdnEnabled ? "ON" : "OFF"}
+                </button>
+              </div>
+
+              {/* Parameter 2: DB indexing */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: "11.5px", fontWeight: "700", color: T1 }}>Database B-Tree Indexing</div>
+                  <div style={{ fontSize: "9.5px", color: T3, marginTop: "1.5px" }}>Accelerates query compiler execution index pointer searches.</div>
+                </div>
+                <button
+                  onClick={() => { setDbIndexed(!dbIndexed); triggerSuccessBeep(); }}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: "12px",
+                    background: dbIndexed ? "rgba(16,245,160,0.12)" : "rgba(255,255,255,0.02)",
+                    border: `1px solid ${dbIndexed ? colors.green : "rgba(255,255,255,0.06)"}`,
+                    color: dbIndexed ? colors.green : T3,
+                    fontSize: "10px",
+                    fontWeight: "800",
+                    cursor: "pointer"
+                  }}
+                >
+                  {dbIndexed ? "ACTIVE" : "SEQ SCAN"}
+                </button>
+              </div>
+
+              {/* Fire request action */}
+              <button
+                onClick={runPacketDispatch}
+                disabled={routingState !== "idle"}
+                className="rm-btn"
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  background: routingState !== "idle" ? "rgba(255,255,255,0.02)" : "linear-gradient(135deg, #10F5A0, #0EA5E9)",
+                  border: "none",
+                  borderRadius: "8px",
+                  color: routingState !== "idle" ? T3 : "#000000",
+                  fontSize: "11.5px",
+                  fontWeight: "900",
+                  cursor: routingState !== "idle" ? "not-allowed" : "pointer"
+                }}
+              >
+                {routingState !== "idle" ? "✈️ Dispatched Packet..." : "⚡ DISPATCH NETWORK PACKET"}
+              </button>
+            </div>
+
+            {/* Performance log list */}
+            <div style={{
+              background: "rgba(3,8,18,0.45)",
+              border: `1px solid ${BDR}`,
+              borderRadius: "8px",
+              padding: "10px",
+              height: "100px",
+              overflowY: "auto",
+              fontFamily: "monospace",
+              fontSize: "10px",
+              color: T2
+            }} className="no-scrollbar">
+              {networkLogs.map((log, idx) => (
+                <div key={idx} style={{ marginBottom: "4px" }}>
+                  {log}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* SVG Map visualizer */}
+          <div className="lg:col-span-7 flex flex-col justify-center items-center" style={{ background: "rgba(3,8,18,0.25)", border: `1px solid ${BDR}`, borderRadius: "10px", padding: "14px", position: "relative" }}>
+            <div style={{ fontSize: "10px", color: T3, fontFamily: "monospace", marginBottom: "14px", letterSpacing: "1px" }}>
+              ACTIVE GRAPH ROUTING INTERCONNECT
+            </div>
+
+            {/* Simulated Live SVG Node Interconnect Map */}
+            <svg viewBox="0 0 420 220" style={{ width: "100%", maxWidth: "380px" }}>
+              {/* Paths */}
+              <g stroke="rgba(255,255,255,0.06)" strokeWidth="1.5" fill="none">
+                {/* Client to LB */}
+                <line x1="40" y1="110" x2="130" y2="110" stroke={routingState === "client_to_lb" || routingState === "srv_to_client" || routingState === "cdn_to_client" ? colors.green : "rgba(255,255,255,0.06)"} strokeWidth={routingState !== "idle" ? "2" : "1.5"} />
+                {/* LB to CDN */}
+                <line x1="130" y1="110" x2="210" y2="50" stroke={routingState === "lb_to_cdn" || routingState === "cdn_to_client" ? colors.green : "rgba(255,255,255,0.06)"} strokeWidth={routingState !== "idle" ? "2" : "1.5"} />
+                {/* LB to Server A */}
+                <line x1="130" y1="110" x2="240" y2="90" stroke={routingState === "lb_to_srv" || routingState === "db_to_srv" || routingState === "srv_to_client" ? colors.green : "rgba(255,255,255,0.06)"} strokeWidth={routingState !== "idle" ? "2" : "1.5"} />
+                {/* LB to Server B */}
+                <line x1="130" y1="110" x2="240" y2="130" stroke={routingState === "lb_to_srv" || routingState === "db_to_srv" || routingState === "srv_to_client" ? colors.green : "rgba(255,255,255,0.06)"} strokeWidth={routingState !== "idle" ? "2" : "1.5"} />
+                {/* Server A to DB */}
+                <line x1="240" y1="90" x2="350" y2="110" stroke={routingState === "srv_to_db" || routingState === "db_processing" || routingState === "db_to_srv" ? colors.green : "rgba(255,255,255,0.06)"} strokeWidth={routingState !== "idle" ? "2" : "1.5"} />
+                {/* Server B to DB */}
+                <line x1="240" y1="130" x2="350" y2="110" stroke={routingState === "srv_to_db" || routingState === "db_processing" || routingState === "db_to_srv" ? colors.green : "rgba(255,255,255,0.06)"} strokeWidth={routingState !== "idle" ? "2" : "1.5"} />
+              </g>
+
+              {/* Animated Request Packet Dot */}
+              {routingState === "client_to_lb" && (
+                <circle cx="85" cy="110" r="5" fill={colors.green} filter={`drop-shadow(0 0 6px ${colors.green})`} />
+              )}
+              {routingState === "lb_to_cdn" && (
+                <circle cx="170" cy="80" r="5" fill={colors.green} filter={`drop-shadow(0 0 6px ${colors.green})`} />
+              )}
+              {routingState === "cdn_to_client" && (
+                <circle cx="125" cy="80" r="5" fill={colors.green} filter={`drop-shadow(0 0 6px ${colors.green})`} />
+              )}
+              {routingState === "lb_to_srv" && (
+                <circle cx="185" cy={activeServer === "A" ? 100 : 120} r="5" fill={colors.green} filter={`drop-shadow(0 0 6px ${colors.green})`} />
+              )}
+              {routingState === "srv_to_db" && (
+                <circle cx="295" cy={activeServer === "A" ? 100 : 120} r="5" fill={colors.green} filter={`drop-shadow(0 0 6px ${colors.green})`} />
+              )}
+              {routingState === "db_processing" && (
+                <circle cx="350" cy="110" r="5" fill={colors.magenta} className={!dbIndexed ? "animate-ping" : ""} filter={`drop-shadow(0 0 6px ${colors.magenta})`} />
+              )}
+              {routingState === "db_to_srv" && (
+                <circle cx="295" cy={activeServer === "A" ? 100 : 120} r="5" fill={colors.green} filter={`drop-shadow(0 0 6px ${colors.green})`} />
+              )}
+              {routingState === "srv_to_client" && (
+                <circle cx="120" cy="110" r="5" fill={colors.green} filter={`drop-shadow(0 0 6px ${colors.green})`} />
+              )}
+
+              {/* Node Icons */}
+              {/* Client Node */}
+              <g transform="translate(20,95)">
+                <rect width="30" height="30" rx="6" fill="#0F172A" stroke={colors.cyan} strokeWidth="1.5" />
+                <text x="15" y="18" fill={colors.cyan} fontSize="9" textAnchor="middle" fontWeight="bold">PC</text>
+                <text x="15" y="42" fill={T3} fontSize="8" textAnchor="middle">Client</text>
+              </g>
+
+              {/* Load Balancer */}
+              <g transform="translate(115,95)">
+                <rect width="30" height="30" rx="6" fill="#0F172A" stroke={colors.purple} strokeWidth="1.5" />
+                <text x="15" y="18" fill={colors.purple} fontSize="9" textAnchor="middle" fontWeight="bold">LB</text>
+                <text x="15" y="42" fill={T3} fontSize="8" textAnchor="middle">Balancer</text>
+              </g>
+
+              {/* CDN Cache Node */}
+              <g transform="translate(195,35)">
+                <rect width="30" height="30" rx="6" fill="#0F172A" stroke={cdnEnabled ? colors.cyan : "rgba(255,255,255,0.06)"} strokeWidth="1.5" opacity={cdnEnabled ? 1 : 0.4} />
+                <text x="15" y="18" fill={cdnEnabled ? colors.cyan : T3} fontSize="9" textAnchor="middle" fontWeight="bold" opacity={cdnEnabled ? 1 : 0.4}>CDN</text>
+                <text x="15" y="42" fill={T3} fontSize="8" textAnchor="middle">Edge Cache</text>
+              </g>
+
+              {/* Server A */}
+              <g transform="translate(225,75)">
+                <rect width="30" height="30" rx="6" fill="#0F172A" stroke={activeServer === "A" && routingState !== "idle" ? colors.green : "rgba(255,255,255,0.06)"} strokeWidth="1.5" />
+                <text x="15" y="18" fill={T2} fontSize="9" textAnchor="middle" fontWeight="bold">SRV A</text>
+              </g>
+
+              {/* Server B */}
+              <g transform="translate(225,115)">
+                <rect width="30" height="30" rx="6" fill="#0F172A" stroke={activeServer === "B" && routingState !== "idle" ? colors.green : "rgba(255,255,255,0.06)"} strokeWidth="1.5" />
+                <text x="15" y="18" fill={T2} fontSize="9" textAnchor="middle" fontWeight="bold">SRV B</text>
+              </g>
+
+              {/* DB SQL Database */}
+              <g transform="translate(335,95)">
+                <rect width="35" height="30" rx="6" fill="#0F172A" stroke={dbIndexed ? colors.green : colors.magenta} strokeWidth="1.5" />
+                <text x="17.5" y="18" fill={dbIndexed ? colors.green : colors.magenta} fontSize="9" textAnchor="middle" fontWeight="bold">SQL</text>
+                <text x="17.5" y="42" fill={T3} fontSize="8" textAnchor="middle">PostgreSQL</text>
+              </g>
+            </svg>
+
+            {/* Real-time latency score */}
+            {latencyValue !== null && (
+              <div style={{
+                marginTop: "12px",
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                padding: "6px 14px",
+                borderRadius: "20px",
+                fontSize: "11px",
+                color: latencyValue < 10 ? colors.green : (latencyValue < 100 ? colors.cyan : colors.magenta),
+                fontWeight: "800",
+                letterSpacing: "0.5px"
+              }}>
+                ⏱️ LAST TRANSACTION LATENCY: {latencyValue}ms
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function App() {
   useEffect(()=>{
     if(document.getElementById("rmx-css"))return;
     const el=document.createElement("style");el.id="rmx-css";el.textContent=CSS;
@@ -2831,6 +4778,35 @@ export default function App(){
 
           {/* Embedded Pomodoro focus card */}
           <Pomodoro />
+
+          {/* Real-time Systems AI Copilot Chatbot */}
+          <SidebarChatbot 
+            aiMessages={aiMessages}
+            aiLoading={aiLoading}
+            handleSendAiMessage={handleSendAiMessage}
+            highThinkingEnabled={highThinkingEnabled}
+            setHighThinkingEnabled={setHighThinkingEnabled}
+            audioEnabled={audioEnabled}
+          />
+
+          {/* Systems Academy Card */}
+          <SidebarAcademy
+            customAcademyTopic={customAcademyTopic}
+            setCustomAcademyTopic={setCustomAcademyTopic}
+            lessonData={lessonData}
+            setLessonData={setLessonData}
+            lessonLoading={lessonLoading}
+            handleGenerateLesson={handleGenerateLesson}
+            selectedAnswers={selectedAnswers}
+            setSelectedAnswers={setSelectedAnswers}
+            quizSubmitted={quizSubmitted}
+            setQuizSubmitted={setQuizSubmitted}
+            editableNotes={editableNotes}
+            setEditableNotes={setEditableNotes}
+            notesSavedStatus={notesSavedStatus}
+            handleSaveLessonNotes={handleSaveLessonNotes}
+            audioEnabled={audioEnabled}
+          />
         </aside>
 
         {/* Right Column (Main View Panel) */}
@@ -2898,6 +4874,7 @@ export default function App(){
                   { key: "library", label: "Library", icon: "jedi", color: "#A78BFA" },
                   { key: "tracks", label: "Tracks", icon: "mando", color: "#38bdf8" },
                   { key: "elite", label: "Elite 1%", icon: "jedi", color: "#FBBF24" },
+                  { key: "systems", label: "Systems Lab", icon: "mando", color: "#22D3EE" },
                   { key: "progress", label: "Progress", icon: "empire", color: "#10F5A0" }
                 ].map(item => (
                   <button
@@ -3910,6 +5887,10 @@ export default function App(){
             )}
           </div>
         )}
+
+        {tab==="systems"&&(
+          <SystemsLab audioEnabled={audioEnabled} />
+        )}
       </div>
     </main>
   </div>
@@ -4193,409 +6174,9 @@ export default function App(){
             )}
           </div>
 
-          {/* 2. Tab Navigation Switcher (Pinned) */}
-          <div className="px-4 py-2 bg-slate-950/30 border-b border-white/10 flex-shrink-0 flex p-1 gap-1">
+          {/* Collapsible Settings & Footer Area */}
+          <div className="border-t border-white/10 flex-1 overflow-y-auto no-scrollbar bg-slate-950/40">
             <button
-              onClick={() => {
-                setActivePortalTab("chat");
-                playSweepSound(audioEnabled, true);
-              }}
-              className={`flex-1 py-1.5 rounded-lg text-[9px] tracking-widest font-mono font-black transition-all duration-200 flex items-center justify-center gap-1.5 ${
-                activePortalTab === "chat"
-                  ? "bg-[#A78BFA]/15 border border-[#A78BFA]/20 text-[#A78BFA] shadow-[0_2px_8px_rgba(167,139,250,0.15)]"
-                  : "text-slate-400 hover:text-slate-200 border border-transparent"
-              }`}
-            >
-              <span>💬</span> COPILOT CHAT
-            </button>
-            <button
-              onClick={() => {
-                setActivePortalTab("academy");
-                playSweepSound(audioEnabled, true);
-              }}
-              className={`flex-1 py-1.5 rounded-lg text-[9px] tracking-widest font-mono font-black transition-all duration-200 flex items-center justify-center gap-1.5 ${
-                activePortalTab === "academy"
-                  ? "bg-[#A78BFA]/15 border border-[#A78BFA]/20 text-[#A78BFA] shadow-[0_2px_8px_rgba(167,139,250,0.15)]"
-                  : "text-slate-400 hover:text-slate-200 border border-transparent"
-              }`}
-            >
-              <span>🎓</span> SYSTEMS ACADEMY
-            </button>
-          </div>
-
-          {/* 3. Active View Panel (Fills remaining height) */}
-          <div className="flex-1 min-h-0 flex flex-col p-4 overflow-hidden relative">
-            {activePortalTab === "chat" ? (
-              /* COPILOT CHAT - Full height layout with pinned input */
-              <div className="flex-1 min-h-0 flex flex-col justify-between">
-                {/* Engine Metadata & Thinking Indicator */}
-                <div className="flex items-center justify-between mb-3 flex-shrink-0">
-                  <div className="flex flex-col font-mono">
-                    <span className="text-[10px] tracking-[0.12em] font-black text-[#A78BFA] uppercase">
-                      🧠 SYSTEMS AI COPILOT
-                    </span>
-                    <span className="text-[8px] text-slate-500 tracking-wider uppercase mt-0.5">
-                      ENGINE: <span className="text-[#A78BFA] font-black">{highThinkingEnabled ? "gemini-3.1-pro-preview" : "gemini-3.5-flash"}</span> // SECURE
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setHighThinkingEnabled(prev => !prev);
-                      playSweepSound(audioEnabled, !highThinkingEnabled);
-                    }}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-[8px] font-mono font-bold transition-all duration-300 ${highThinkingEnabled ? "bg-[#A78BFA]/15 text-[#A78BFA] border-[#A78BFA]/30 shadow-[0_0_12px_rgba(167,139,250,0.15)]" : "bg-slate-950/40 text-slate-500 border-white/5"}`}
-                  >
-                    <Brain className={`w-3 h-3 ${highThinkingEnabled ? "animate-pulse" : ""}`} />
-                    THINKING: {highThinkingEnabled ? "HIGH" : "FAST"}
-                  </button>
-                </div>
-
-                {/* Messages List - Scrollable viewport */}
-                <div className="flex-1 min-h-0 overflow-y-auto pr-1 no-scrollbar space-y-4 mb-3">
-                  {aiMessages.map((msg, i) => (
-                    <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                      <span className="text-[7px] font-mono text-slate-500 mb-0.5 tracking-widest uppercase">
-                        {msg.role === "user" ? "EXPLORER" : "AI ENGINE"}
-                      </span>
-                      <div
-                        className={`max-w-[85%] rounded-2xl p-3 text-xs font-mono leading-relaxed whitespace-pre-wrap select-text shadow-sm ${msg.role === "user" ? "bg-gradient-to-br from-[#A78BFA]/15 to-[#8B5CF6]/10 border border-[#A78BFA]/25 text-white" : "bg-white/5 border border-white/5 text-slate-300"}`}
-                      >
-                        {msg.parts[0].text}
-                        
-                        {/* Search grounding citations */}
-                        {msg.role === "model" && msg.groundingChunks && msg.groundingChunks.length > 0 && (
-                          <div className="mt-2 pt-1.5 border-t border-white/5 space-y-1 select-none">
-                            <div className="text-[8px] font-mono text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
-                              <span>🔍</span> GROUNDED SEARCH SOURCES:
-                            </div>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {msg.groundingChunks.map((chunk, cIdx) => {
-                                const uri = chunk.web?.uri;
-                                const title = chunk.web?.title || uri;
-                                if (!uri) return null;
-                                return (
-                                  <a
-                                    key={cIdx}
-                                    href={uri}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 hover:bg-[#A78BFA]/10 hover:text-[#A78BFA] text-[9px] text-slate-300 transition-all duration-200 border border-white/5 hover:border-[#A78BFA]/30 max-w-[130px] truncate shadow-sm"
-                                    title={title}
-                                  >
-                                    <span className="text-[#A78BFA] font-bold">[{cIdx + 1}]</span>
-                                    <span className="truncate">{title}</span>
-                                  </a>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {aiLoading && (
-                    <div className="flex flex-col items-start animate-pulse">
-                      <span className="text-[8px] font-mono text-[#A78BFA] mb-0.5 tracking-widest uppercase">
-                        THINKING PROCESS ACTIVE
-                      </span>
-                      <div className="bg-purple-500/5 border border-[#A78BFA]/10 rounded-2xl p-3 text-xs font-mono text-[#A78BFA] flex items-center gap-2">
-                        <span className="flex h-1.5 w-1.5 relative">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#A78BFA] opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#A78BFA]"></span>
-                        </span>
-                        {highThinkingEnabled ? (
-                          <span>Simulating system pathways (high thinking level engaged)…</span>
-                        ) : (
-                          <span>Synthesizing flash response…</span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Quick Prompt Scrollable Row (pinned) */}
-                <div className="flex gap-2 overflow-x-auto no-scrollbar py-1 mb-2.5 flex-shrink-0 border-t border-white/5 pt-2">
-                  {[
-                    { label: "🐳 Docker Namespaces", prompt: "Explain how Docker uses Linux namespaces & cgroups to isolate processes." },
-                    { label: "💾 Database Locks", prompt: "What is the difference between Shared and Exclusive locks in Postgres, and how do deadlocks occur?" },
-                    { label: "⚡ CPU Cache", prompt: "Explain CPU cache lines, cache bouncing, and spatial/temporal locality with code examples." },
-                    { label: "📊 Postgres EXPLAIN", prompt: "How do I read a Postgres EXPLAIN ANALYZE query plan? Explain Seq Scan vs Index Scan." }
-                  ].map((item, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSendAiMessage(item.prompt)}
-                      disabled={aiLoading}
-                      className="flex-shrink-0 px-2.5 py-1.5 text-[9px] font-mono rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-[#A78BFA]/20 text-slate-300 hover:text-white transition-all duration-150 disabled:opacity-50 shadow-sm"
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Message Input Box (pinned at bottom) */}
-                <form onSubmit={e => { e.preventDefault(); handleSendAiMessage(); }} className="flex gap-2 flex-shrink-0">
-                  <input
-                    type="text"
-                    value={aiInput}
-                    onChange={e => setAiInput(e.target.value)}
-                    disabled={aiLoading}
-                    placeholder={aiLoading ? "Thinking..." : "Ask your systems oracle..."}
-                    className="flex-1 min-w-0 bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-[#A78BFA]/40 transition-all disabled:opacity-50"
-                  />
-                  <button
-                    type="submit"
-                    disabled={aiLoading || !aiInput.trim()}
-                    className="p-2 rounded-xl bg-gradient-to-br from-[#A78BFA] to-[#8B5CF6] hover:brightness-110 disabled:bg-slate-800 disabled:text-slate-600 text-black font-black flex items-center justify-center transition-all duration-200 shadow-md"
-                  >
-                    <Send className="w-3.5 h-3.5 text-black" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleClearChat}
-                    title="Clear conversation log"
-                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white transition-all duration-200 shadow-sm"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </form>
-              </div>
-            ) : (
-                <div className="flex-1 min-h-0 overflow-y-auto pr-1 no-scrollbar space-y-4 flex flex-col animate-fade-in">
-                  {/* Systems Academy Topic Picker or Lesson Viewer */}
-                  {!lessonData && !lessonLoading ? (
-                    <div className="space-y-4">
-                      <p className="text-[11px] font-mono text-slate-400 leading-relaxed bg-white/5 p-3 rounded-xl border border-white/5 shadow-inner">
-                        Welcome to the <strong>Flow 16 Academy</strong>. Select a high-performance system curriculum or define your own. The oracle will generate deep-dive lessons, interactive checkpoint quizzes, and saveable cheat sheet study notes!
-                      </p>
-
-                      <div className="space-y-2">
-                        <span className="text-[9px] font-mono font-black tracking-[0.15em] text-[#A78BFA]/85 uppercase">CURRICULUM PRESETS:</span>
-                        <div className="grid grid-cols-1 gap-2">
-                          {[
-                            { label: "🐳 Docker Isolation & namespaces", topic: "Docker Namespaces and cgroups Process Isolation" },
-                            { label: "💾 Postgres Shared & Exclusive Locks", topic: "PostgreSQL Shared and Exclusive Locks, Row-Level locks, and Deadlocks" },
-                            { label: "⚡ CPU Caches & Spatial Locality", topic: "CPU Cache Lines, Spatial & Temporal Locality, Cache Bouncing" },
-                            { label: "📊 Analyzing Postgres EXPLAIN Plans", topic: "Analyzing Postgres Query Plans with EXPLAIN ANALYZE" },
-                            { label: "🧱 Virtual Memory & OS mmap allocation", topic: "Operating System Page Tables, Virtual Memory, and mmap memory allocation" }
-                          ].map((item, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => handleGenerateLesson(item.topic)}
-                              className="w-full text-left p-3 rounded-xl border border-white/5 bg-white/3 hover:bg-[#A78BFA]/10 hover:border-[#A78BFA]/25 hover:translate-x-1 text-xs font-mono text-slate-300 hover:text-white transition-all duration-200 shadow-sm"
-                            >
-                              {item.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 pt-3 border-t border-white/5">
-                        <span className="text-[9px] font-mono font-black tracking-[0.15em] text-[#A78BFA]/85 uppercase">DEFINE CUSTOM CLASSROOM SYLLABUS:</span>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={customAcademyTopic}
-                            onChange={e => setCustomAcademyTopic(e.target.value)}
-                            placeholder="e.g. TCP Slow Start, Rust lifecycles..."
-                            className="flex-1 min-w-0 bg-slate-950/40 border border-white/10 rounded-xl px-3 py-2.5 text-xs font-mono text-white placeholder:text-slate-600 focus:outline-none focus:border-[#A78BFA]/40 focus:ring-1 focus:ring-[#A78BFA]/10 transition-all"
-                          />
-                          <button
-                            onClick={() => handleGenerateLesson()}
-                            disabled={!customAcademyTopic.trim()}
-                            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#A78BFA] to-[#8B5CF6] hover:brightness-110 disabled:bg-slate-800 disabled:text-slate-600 text-black font-black font-mono text-xs transition-all duration-200 shadow-md"
-                          >
-                            STUDY
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : lessonLoading ? (
-                    <div className="py-12 flex flex-col items-center justify-center space-y-3 font-mono">
-                      <RefreshCw className="w-8 h-8 text-[#A78BFA] animate-spin" />
-                      <div className="text-center text-xs text-[#A78BFA] animate-pulse uppercase tracking-wider font-black">
-                        COMPILING INTERACTIVE LESSON...
-                      </div>
-                      <div className="text-[9px] text-slate-500 text-center max-w-xs leading-relaxed">
-                        The reasoning thrum is generating system-level documentation, formulation summaries, checkout checkpoint quizzes, and pristine exportable notes.
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-5 select-text">
-                      <div className="flex items-center justify-between border-b border-white/10 pb-2">
-                        <h4 className="text-xs font-bold font-mono text-[#A78BFA] uppercase truncate flex-1 pr-2">
-                          🎓 {lessonData.title}
-                        </h4>
-                        <button
-                          onClick={() => setLessonData(null)}
-                          className="px-3 py-1 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#A78BFA]/30 text-slate-300 hover:text-white font-mono text-[9px] tracking-wider transition-all duration-200 shadow-sm"
-                        >
-                          RESET
-                        </button>
-                      </div>
-
-                      {/* Lesson Content Reading */}
-                      <div 
-                        className="rounded-2xl border border-white/10 p-5 space-y-3 shadow-xl"
-                        style={{ 
-                          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%)",
-                          backdropFilter: "blur(16px)",
-                          WebkitBackdropFilter: "blur(16px)"
-                        }}
-                      >
-                        <div className="text-[10px] font-mono font-black text-[#A78BFA] tracking-[0.12em] uppercase flex items-center gap-1.5">
-                          <span>📖</span> SECTION 1: LECTURE GUIDE
-                        </div>
-                        <div className="text-[11px] font-sans text-slate-300 leading-relaxed">
-                          <Md text={lessonData.lessonContent} color="#A78BFA" />
-                        </div>
-                      </div>
-
-                      {/* Interactive Quiz Checkpoint */}
-                      <div 
-                        className="rounded-2xl border border-white/10 p-5 space-y-4 shadow-xl"
-                        style={{ 
-                          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%)",
-                          backdropFilter: "blur(16px)",
-                          WebkitBackdropFilter: "blur(16px)"
-                        }}
-                      >
-                        <div className="text-[10px] font-mono font-black text-[#A78BFA] tracking-[0.12em] uppercase flex items-center gap-1.5">
-                          <span>📝</span> SECTION 2: CHECKPOINT QUIZ
-                        </div>
-                        {lessonData.quizQuestions && lessonData.quizQuestions.map((q, qIdx) => {
-                          const selectedOpt = selectedAnswers[qIdx];
-                          return (
-                            <div key={qIdx} className="space-y-3 border-t border-white/5 pt-4 first:border-0 first:pt-0">
-                              <div className="text-xs font-mono font-semibold text-slate-200">
-                                Q{qIdx + 1}: {q.question}
-                              </div>
-                              <div className="grid grid-cols-1 gap-2">
-                                {q.options.map((opt, optIdx) => {
-                                  let btnStyle = "border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:border-[#A78BFA]/20";
-                                  if (quizSubmitted) {
-                                    if (optIdx === q.correctIndex) {
-                                      btnStyle = "border-emerald-500/50 bg-emerald-500/10 text-emerald-400 font-bold";
-                                    } else if (optIdx === selectedOpt) {
-                                      btnStyle = "border-red-500/50 bg-red-500/10 text-red-400";
-                                    } else {
-                                      btnStyle = "border-white/5 bg-transparent text-slate-500 opacity-60";
-                                    }
-                                  } else if (selectedOpt === optIdx) {
-                                    btnStyle = "border-[#A78BFA] bg-[#A78BFA]/10 text-white font-bold";
-                                  }
-                                  return (
-                                    <button
-                                      key={optIdx}
-                                      disabled={quizSubmitted}
-                                      onClick={() => {
-                                        setSelectedAnswers(prev => ({ ...prev, [qIdx]: optIdx }));
-                                        playSuccessBeep(audioEnabled);
-                                      }}
-                                      className={`w-full text-left p-3 rounded-xl border text-[10px] font-mono transition-all duration-200 ${btnStyle}`}
-                                    >
-                                      {opt}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                              {quizSubmitted && (
-                                <div className="text-[9px] font-mono text-slate-400 bg-slate-950/40 border border-white/5 p-3 rounded-xl leading-relaxed mt-1">
-                                  <span className="font-bold block mb-1 text-slate-300">
-                                    {selectedOpt === q.correctIndex ? "✅ Correct!" : "❌ Incorrect."}
-                                  </span>
-                                  {q.explanation}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                        
-                        {!quizSubmitted ? (
-                          <button
-                            onClick={() => {
-                              setQuizSubmitted(true);
-                              playSuccessBeep(audioEnabled);
-                            }}
-                            disabled={Object.keys(selectedAnswers).length < (lessonData.quizQuestions?.length || 3)}
-                            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:brightness-110 disabled:opacity-40 text-black font-black font-mono text-xs transition-all duration-200 shadow-md"
-                          >
-                            SUBMIT ANSWERS
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setQuizSubmitted(false);
-                              setSelectedAnswers({});
-                            }}
-                            className="w-full py-2.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 font-mono text-xs transition-all duration-200 shadow-sm"
-                          >
-                            RETRY QUIZ
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Editable summary notes summary notes */}
-                      <div 
-                        className="rounded-2xl border border-white/10 p-5 space-y-4 shadow-xl"
-                        style={{ 
-                          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%)",
-                          backdropFilter: "blur(16px)",
-                          WebkitBackdropFilter: "blur(16px)"
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-black text-[#A78BFA] tracking-[0.12em] uppercase flex items-center gap-1.5">
-                            <span>📋</span> SECTION 3: STUDY NOTES SUMMARY
-                          </span>
-                        </div>
-                        <textarea
-                          value={editableNotes}
-                          onChange={e => setEditableNotes(e.target.value)}
-                          rows={8}
-                          className="w-full bg-slate-950/40 border border-white/10 rounded-xl p-3.5 text-[10px] font-mono text-slate-200 focus:outline-none focus:border-[#A78BFA]/40 focus:ring-1 focus:ring-[#A78BFA]/10 resize-y leading-relaxed shadow-inner"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={handleSaveLessonNotes}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-gradient-to-r from-[#A78BFA] to-[#8B5CF6] hover:brightness-110 text-black text-xs font-mono font-black transition-all duration-200 shadow-md"
-                          >
-                            <span>💾</span> {notesSavedStatus === "saved" ? "SAVED!" : notesSavedStatus === "saving" ? "SAVING..." : "SAVE TO CHEAT SHEETS"}
-                          </button>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(editableNotes);
-                              playSuccessBeep(audioEnabled);
-                            }}
-                            className="px-4 py-2.5 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 text-slate-300 font-mono text-[10px] transition-all duration-200 shadow-sm"
-                          >
-                            COPY NOTES
-                          </button>
-                        </div>
-                        <p className="text-[8px] font-mono text-slate-500 leading-relaxed">
-                          * Saving registers this lesson in your local cheat sheets under the course months, so they automatically load in your main dashboard!
-                        </p>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          setLessonData(null);
-                          playSuccessBeep(audioEnabled);
-                        }}
-                        className="w-full py-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-mono text-[10px] tracking-widest uppercase transition-all duration-200 shadow-sm"
-                      >
-                        ⬅️ BACK TO ACADEMY TOPICS
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Collapsible Settings & Footer Area */}
-            <div className="border-t border-white/10 flex-shrink-0 bg-slate-950/40">
-              <button
                 onClick={() => {
                   setVesselSettingsOpen(!vesselSettingsOpen);
                   playSweepSound(audioEnabled, !vesselSettingsOpen);
